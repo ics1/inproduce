@@ -523,11 +523,11 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   _changeData(productId, stateName, column, newValue) {
-    setState(() {
-      widget.isLoading = Future(() {
-        return true;
+      setState(() {
+        widget.isLoading = Future(() {
+          return true;
+        });
       });
-    });
 
 
       changeStatus(productId, {column : newValue}).then((value) {
@@ -537,12 +537,14 @@ class _DetailsPageState extends State<DetailsPage> {
             widget.changed = true;
           });
           key.currentState.showSnackBar(new SnackBar(
+            backgroundColor: Colors.green,
             content: new Text("Изменения сохранены!"),
           ));
         } else {
           showDialog(
               context: context,
               builder: (context) => AlertDialog(
+                backgroundColor: Colors.red,
                 title: Text("Ошибка"),
                 content: Text("Данные не сохранены!"),
               )

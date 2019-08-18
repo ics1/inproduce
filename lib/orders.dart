@@ -4,6 +4,9 @@ import 'details.dart';
 import 'package:decimal/decimal.dart';
 import 'api/api.dart';
 import 'details_table.dart';
+import 'form.dart';
+import 'table.dart';
+
 
 class OrdersPage extends StatefulWidget {
   dynamic params;
@@ -63,6 +66,23 @@ class _OrdersPageState extends State<OrdersPage> {
                 semanticLabel: 'search',
               ),
               onPressed: () {
+                Navigator.push(
+                  _ctx,
+                  MaterialPageRoute(builder: (context) => MyHomePage()),
+                );
+                print('Search button');
+              },
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.search,
+                semanticLabel: 'search',
+              ),
+              onPressed: () {
+                Navigator.push(
+                  _ctx,
+                  MaterialPageRoute(builder: (context) => MyApp()),
+                );
                 print('Search button');
               },
             ),

@@ -69,7 +69,6 @@ class Api {
     }
   }
 
-
   static Future<List<dynamic>> fetchOrders(dynamic filterItems) async {
     String filter = '&filter={"AE":{"!=":""}';
 
@@ -114,7 +113,7 @@ class Api {
     String filter = '&filter='+jsonEncode(filterItems);
 
     print(filter);
-    String path = 'accounting/orders?_dc=1563489532611&page=1&start=0&per-page=100&sort=[{"property":"AE","direction":"ASC"}]';
+    String path = 'accounting/orders?_dc=1563489532611&page=1&start=0&per-page=300&sort=[{"property":"AE","direction":"ASC"}]';
 
     String token;
     await getToken().then((value) {
@@ -147,6 +146,33 @@ class Api {
     });
 
     var url =_url + path+ recordId.toString()+'?auth_token='+token;
+    print(jsonEncode(group));
+    print(url);
+
+    final response = await http.put(
+      url,
+      headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+      body: jsonEncode(group),
+    );
+    if (response.statusCode == 200) {
+      print(json.decode(response.body));
+      return true;
+    } else {
+      print(json.decode(response.body));
+      return false;
+
+      throw Exception('Failed to load post');
+    }
+  }
+
+  static Future<dynamic> updateAll(Map<String,dynamic> group) async {
+    String path = 'accounting/orders/update-all';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+
+    var url =_url + path+'?auth_token='+token;
     print(jsonEncode(group));
     print(url);
 

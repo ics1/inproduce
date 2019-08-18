@@ -20,6 +20,16 @@ import 'login.dart';
 import 'orders.dart';
 import 'orders_all.dart';
 import 'colors.dart';
+import 'details_table.dart';
+import 'table.dart';
+
+class IsLoading with ChangeNotifier {
+  bool value = false;
+  void setState(state) {
+    value = state;
+    notifyListeners();
+  }
+}
 
 // TODO: Convert ShrineApp to stateful widget (104)
 class GreenSofaApp extends StatelessWidget {
@@ -43,6 +53,8 @@ class GreenSofaApp extends StatelessWidget {
         '/home':         (BuildContext context) => new HomePage(),
         '/orders':         (BuildContext context) => new OrdersPage(),
         '/orders-all':         (BuildContext context) => new OrdersAllPage(),
+        '/orders-table':         (BuildContext context) => new DataTableDemo(),
+        '/table':         (BuildContext context) => new MyApp(),
         '/' :          (BuildContext context) => new LoginPage(),
       },
       localizationsDelegates: [

@@ -71,7 +71,6 @@ class _HomePageState extends State<HomePage> {
   }
   setStartFilter() {
     setState(() {
-
       widget._date = [new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][0])), new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][1]))];
       widget.filter['date'] = [widget.dateFormat.format(widget._date[0]),widget.dateFormat.format(widget._date[1])];
     });
