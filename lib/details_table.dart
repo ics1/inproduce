@@ -231,6 +231,15 @@ class _DataTableDemoState extends State<DataTableDemo> {
       key: key,
       appBar: AppBar(
         title: Text('Распределение заказов' + _title),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            semanticLabel: 'arrow_back',
+          ),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed("/home");
+          },
+        ),
         actions: <Widget>[
           //MaterialDemoDocumentationButton(DataTableDemo.routeName),
           IconButton(

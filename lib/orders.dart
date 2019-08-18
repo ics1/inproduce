@@ -6,7 +6,7 @@ import 'api/api.dart';
 import 'details_table.dart';
 import 'form.dart';
 import 'table.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrdersPage extends StatefulWidget {
   dynamic params;
@@ -22,6 +22,7 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   BuildContext _ctx;
+  int userType;
   // TODO: Add a variable for Category (104)
   @override
   void initState() {
@@ -37,6 +38,12 @@ class _OrdersPageState extends State<OrdersPage> {
       });
 
     });*/
+    getUserType().then((value) => setType(value));
+  }
+
+  setType(value) {
+    userType = value;
+    return userType;
   }
 
   Widget build(BuildContext context) {
@@ -60,32 +67,7 @@ class _OrdersPageState extends State<OrdersPage> {
             },
           ),
           actions: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.search,
-                semanticLabel: 'search',
-              ),
-              onPressed: () {
-                Navigator.push(
-                  _ctx,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-                print('Search button');
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.search,
-                semanticLabel: 'search',
-              ),
-              onPressed: () {
-                Navigator.push(
-                  _ctx,
-                  MaterialPageRoute(builder: (context) => MyApp()),
-                );
-                print('Search button');
-              },
-            ),
+
             IconButton(
               icon: Icon(
                 Icons.tune,
@@ -93,10 +75,6 @@ class _OrdersPageState extends State<OrdersPage> {
               ),
               onPressed: () {
                 //_selectDate();
-                Navigator.push(
-                  _ctx,
-                  MaterialPageRoute(builder: (context) => DataTableDemo()),
-                );
                 print('Filter button');
               },
             ),
@@ -274,4 +252,12 @@ class _OrdersPageState extends State<OrdersPage> {
       //widget.post = fetchPost(widget.filter);
     //}
   }
+}
+
+getUserType() async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  print('getUserType=');
+  int getUserType = await preferences.getInt("type");
+  print(getUserType);
+  return getUserType;
 }

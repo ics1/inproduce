@@ -82,12 +82,13 @@ class _HomePageState extends State<HomePage> {
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
-    if (userType == 30) {
-      getUserFio().then((erg) => setFilterFio(erg));
-    } else {
+    if (userType == 10) {
       setState(() {
         widget.post = Api.fetchPost(widget.filter);
       });
+    } else {
+      getUserFio().then((erg) => setFilterFio(erg));
+
     }
     return userType;
   }
@@ -95,8 +96,15 @@ class _HomePageState extends State<HomePage> {
   setFilterFio(value) {
     print('userFio=');
     print(value);
+    print(userType);
     setState(() {
-      widget.filter['fio'] = value;
+      if (userType == 30) {
+        widget.filter['fio'] = value;
+      }
+      if (userType == 40) {
+        widget.filter['fioSt'] = value;
+      }
+
       widget.post = Api.fetchPost(widget.filter);
     });
   }
@@ -441,12 +449,21 @@ class _HomePageState extends State<HomePage> {
 
   Widget _getMenuDrawer() {
     if (userType == 10) {
-      return ListTile(
-        title: Text('Заказы'),
-        onTap: () {
-          Navigator.of(_ctx).pushReplacementNamed("/orders-all");
-        },
-      );
+      return Column( children: <Widget>[
+        ListTile(
+          title: Text('Заказы'),
+          onTap: () {
+            Navigator.of(_ctx).pushReplacementNamed("/orders-all");
+          }
+        ),
+        ListTile(
+          title: Text('Столярка'),
+          onTap: () {
+            Navigator.of(_ctx).pushReplacementNamed("/orders-table");
+          },
+        )
+
+      ]);
     } else {
       return Center();
     }

@@ -42,6 +42,11 @@ class Api {
         filter += ',"Z":"'+filterItems['fio']+'"';
       }
     }
+    if (filterItems != null) {
+      if (filterItems['fioSt'] != null && filterItems['fioSt'] != 'Все') {
+        filter += ',"AZ":"'+filterItems['fioSt']+'"';
+      }
+    }
     filter += '}';
 
     String token;
@@ -81,6 +86,11 @@ class Api {
     if (filterItems != null) {
       if (filterItems['fio'] != null && filterItems['fio'] != 'Все') {
         filter += ',"Z":"'+filterItems['fio']+'"';
+      }
+    }
+    if (filterItems != null) {
+      if (filterItems['fioSt'] != null && filterItems['fioSt'] != 'Все') {
+        filter += ',"AZ":"'+filterItems['fioSt']+'"';
       }
     }
 
