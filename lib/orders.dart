@@ -21,38 +21,37 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
+  String columnStatus = 'W';//BA
   BuildContext _ctx;
   int userType;
   // TODO: Add a variable for Category (104)
   @override
   void initState() {
     super.initState();
-    print('initstate orders=');
-    print(widget.params);
-
-    widget.post = Api.fetchOrders(widget.params['filter']);
-
-    /*fetchPost(widget.params['filter']).then((result) {
-      setState(() {
-        widget.post = result;
-      });
-
-    });*/
+    widget.post = Api.fetchOrdersAll(widget.params['filter']);
     getUserType().then((value) => setType(value));
+  }
+
+  didUpdateWidget(obj) {
+    super.didUpdateWidget(obj);
+    print('ORDERS PAGE didUpdateWidget ==============');
   }
 
   setType(value) {
     userType = value;
+    if (userType == 40) {
+      columnStatus = 'BA';
+    }
     return userType;
   }
 
   Widget build(BuildContext context) {
       _ctx = context;
-      List<String> employee = ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
+      List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко'];
       return Scaffold(
         appBar: AppBar(
           brightness: Brightness.light,
-          title: Text('Дата: ' + widget.params['filter']['date']),
+          title: Text('Дата: ' + widget.params['dateValue']),
           leading: IconButton(
             icon: Icon(
               Icons.arrow_back,
@@ -75,7 +74,6 @@ class _OrdersPageState extends State<OrdersPage> {
               ),
               onPressed: () {
                 //_selectDate();
-                print('Filter button');
               },
             ),
           ],
@@ -167,13 +165,13 @@ class _OrdersPageState extends State<OrdersPage> {
     final ThemeData theme = Theme.of(context);
     final NumberFormat formatter = NumberFormat.simpleCurrency(
         locale: Localizations.localeOf(context).toString());
-    if (product['W'] == '1') {
+    if (product[columnStatus] == '1') {
       iconStatus = Icon(Icons.check_circle_outline, color: Colors.green);
     }
-    if (product['W'] == '2') {
+    if (product[columnStatus] == '2') {
       iconStatus = Icon(Icons.check_circle_outline, color: Colors.yellow);
     }
-    if (product['W'] == '3') {
+    if (product[columnStatus] == '3') {
       iconStatus = Icon(Icons.check_circle_outline, color: Colors.red);
     }
     return ListTile(
@@ -197,10 +195,12 @@ class _OrdersPageState extends State<OrdersPage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text(product['I'], style: TextStyle(fontSize: 14, color: Colors.black),),
-                Text("исполнитель: "+product['Z'], style: TextStyle(fontSize: 12, color: Colors.grey)),
-                Text("дата: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("исп./обивка: "+product['Z'].toString()+" ("+product['W'].toString()+') ('+product['AE'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text("исп./столярка: "+product['AZ'].toString()+" ("+product['BA'].toString()+') ('+product['BB'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text("исп./швейка: "+product['BO'].toString()+" ("+product['BP'].toString()+') ('+product['BQ'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text("дата клиента: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
                 Text("коэф: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                //Text("дата: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("дата производства:: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
               ],
             ),
           ),
@@ -214,11 +214,6 @@ class _OrdersPageState extends State<OrdersPage> {
         ],
       ),
       onTap: () {
-        //product['filter'] = widget.params['filter'];
-        /*Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
-        );*/
         _navigateDetails(_ctx, product);
       },
     );
@@ -235,29 +230,16 @@ class _OrdersPageState extends State<OrdersPage> {
     );
 
     if (result['changed']) {
-
         setState(() {
-          widget.post = Api.fetchOrders(widget.params['filter']);
+          widget.post = Api.fetchOrdersAll(widget.params['filter']);
         });
 
     }
-
-    /*fetchPost(widget.filter).then((resultPost) {
-      print(resultPost);
-      setState(() {
-        widget.post = resultPost;
-      });
-
-    });*/
-      //widget.post = fetchPost(widget.filter);
-    //}
   }
 }
 
 getUserType() async {
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  print('getUserType=');
   int getUserType = await preferences.getInt("type");
-  print(getUserType);
   return getUserType;
 }

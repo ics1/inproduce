@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'api/api.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailsPage extends StatefulWidget {
   final dynamic params;
@@ -52,15 +52,215 @@ class _DetailsPageState extends State<DetailsPage> {
   List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов'];
   DateFormat dateFormat;
 
+  int userType;
+  String userFio;
+  String columnDate = 'AE';//BB
+  String columnStatus = 'W';//BA
+  String columnFio = 'Z';
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getUserType().then((value) => setType(value));
 
+  }
+  setType(value) {
+    userType = value;
+    if (userType == null) {
+      Navigator.of(_ctx).pushReplacementNamed("/login");
+    }
+
+    if (userType == 10) {
+
+    } else {
+      if (userType == 40) {
+        columnDate = 'BB';
+        columnStatus = 'BA';
+        columnFio = 'AZ';
+      }
+    }
+    return userType;
   }
 
   final key = new GlobalKey<ScaffoldState>();
   List<bool> _data = [true, false, false, false];
+  Widget build(BuildContext context) {
+    _ctx = context;
+    Map <String, dynamic> product = widget.params;
+    //dynamic currentFilter = widget.params['filter'];
+    return Scaffold(
+      key: key,
+
+      appBar: AppBar(
+        title: Text(product['A']),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            semanticLabel: 'arrow_back',
+          ),
+          onPressed: () {
+            Navigator.pop(_ctx, { 'params' : product , 'changed': widget.changed});
+            /*Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OrdersPage(params: product)),
+            );*/
+          },
+        ),
+        bottom: PreferredSize(
+            preferredSize: Size(double.infinity, 4.0),
+            child: SizedBox(
+                height: 4.0,
+                child: ProgressBar(widget.isLoading)
+            )
+        ),
+      ),
+      body: SingleChildScrollView(
+        //margin: new EdgeInsets.only(left: 5.0, bottom: 10.0, top: 10.0, right: 5.0),
+        child: Container(
+          padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 20.0, right: 10.0),
+          child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            //mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: _getBody(product),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _getBody(product) {
+    if (userType == 10) { //admin
+      return <Widget> [
+        _buildDescription(product),
+        _buildObivka(product),
+        _buildParalon(product),
+        _buildStolarka(product),
+        _buildShveika(product),
+      ];
+    }
+    if (userType == 30) { //obivka 30
+      return [
+        _buildDescription(product),
+        _getStausStolarka(product),
+        _getStausShveika(product),
+        _buildObivka(product),
+        _buildParalon(product),
+      ];
+    }
+    if (userType == 40) { // stolyarka 40
+      return [
+        _buildDescription(product),
+        _getStausShveika(product),
+        _buildStolarka(product),
+      ];
+    }
+    if (userType == 50) { // shveika 50
+      return [
+        _buildDescription(product),
+        _getStausStolarka(product),
+        _buildShveika(product),
+      ];
+    }
+    if (userType == 60) { // paralonka 60
+      return [
+        _buildDescription(product),
+        _getStausStolarka(product),
+        _getStausShveika(product),
+        _getStausObivka(product),
+        _buildParalon(product),
+      ];
+    }
+    return <Widget> [];
+  }
+  _getIconStatus(product, type) {
+    String _columnStatus = 'BA';
+    String _columnDate = 'BB';
+
+    if (type == 'stolarka') {
+      _columnStatus = 'BA';
+      _columnDate = 'BB';
+    }
+    if (type == 'shveika') {
+      _columnStatus = 'BP';
+      _columnDate = 'BQ';
+    }
+    if (type == 'obivka') {
+      _columnStatus = 'W';
+      _columnDate = 'AE';
+    }
+    Icon iconStatus = Icon(Icons.check_circle_outline, color: Colors.black);
+    final ThemeData theme = Theme.of(context);
+
+    if (product[_columnStatus] == '1') {
+      iconStatus = Icon(Icons.check_circle_outline, color: Colors.green);
+    }
+    if (product[_columnStatus] == '2') {
+      iconStatus = Icon(Icons.check_circle_outline, color: Colors.yellow);
+    }
+    if (product[_columnStatus] == '3') {
+      iconStatus = Icon(Icons.check_circle_outline, color: Colors.red);
+    }
+    return IconButton(
+        icon: iconStatus,
+        tooltip: 'Increase volume by 10'
+    );
+  }
+
+  _getStausObivka(product) {
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child: Text("Обивка статус: ("+ product['Z'].toString()+") "+ product['W'].toString()+" "+product['AE'].toString()),
+          ),
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child:  _getIconStatus(product, 'obivka'),
+          ),
+        ]
+    );
+  }
+
+  _getStausStolarka(product) {
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child: Text("Столярка статус: ("+ product['BA'].toString()+") "+ product['BB'].toString()+" "+product['AZ'].toString()),
+          ),
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child:  _getIconStatus(product, 'stolarka'),
+          ),
+        ]
+    );
+  }
+
+  _getStausShveika(product) {
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child: Text("Швейка статус: ("+ product['BP'].toString()+") "+ product['BQ'].toString()+" "+product['BO'].toString()),
+          ),
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 0, top: 0, right: 10.0),
+            child:  _getIconStatus(product, 'shveika'),
+          ),
+        ]
+    );
+  }
+
   Widget _buildPanel(product) {
     return ExpansionPanelList(
       expansionCallback: (int index, bool isExpanded) {
@@ -121,18 +321,16 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   Widget _buildShveika(product) {
-    print('1=');
-    print((widget.stateStatus['shveikaVtyagkaStatus']!=null) ? widget.stateStatus['shveikaVtyagkaStatus'] : (product['BQ']=='1' ? true : false));
     return  Container(
         padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
         child:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Пошив", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              Text("Швейка/Пошив", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'shveikaPoshivFio', product['BO'], 'BO', employeeSv),
               _dropDownStatus(product['id'], "Статус: ", 'shveikaPoshivStatus', product['BP'], 'BP', ['BS','BT','BU'] ),
 
-              Center(
+              /*Center(
                 child:
                   CheckboxListTile(
                     title: const Text('Втяжка'),
@@ -171,9 +369,11 @@ class _DetailsPageState extends State<DetailsPage> {
                   //secondary: const Icon(Icons.hourglass_empty),
                 ),
               ),
-              Text("Крой", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              */
+              Text("Швейка/Крой", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'shveikaKroiFio', product['BV'], 'BV', employeeSv),
               _dropDownStatus(product['id'], "Статус: ", 'shveikaKroiStatus', product['BW'], 'BW', ['BX','BY','BZ'] ),
+
             ]
         )
     );
@@ -185,15 +385,16 @@ class _DetailsPageState extends State<DetailsPage> {
         child:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              /*Text("Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'stolarkaIzgFio', product['BE'], 'BE', employeeSt),
-              _dropDownStatus(product['id'], "Статус: ", 'stolarkaIzgStatus', product['BF'], 'BF', ['BG','BH','BI'] ),
-              Text("Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              _dropDownStatus(product['id'], "Статус: ", 'stolarkaIzgStatus', product['BF'], 'BF', ['BG','BH','BI'] ),*/
+              Text("Столярка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'stolarkaCargiFio', product['AZ'], 'AZ', employeeSt),
               _dropDownStatus(product['id'], "Статус: ", 'stolarkaCargiStatus', product['BA'], 'BA', ['BB','BC','BD'] ),
             ]
         )
     );
+
   }
 
   Widget _buildObivka(product) {
@@ -202,10 +403,10 @@ class _DetailsPageState extends State<DetailsPage> {
         child:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              Text("Обивка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'obivkaIzgiFio', product['Z'], 'Z', employeeOb),
               _dropDownStatus(product['id'], "Статус: ", 'obivkaIzgStatus', product['W'], 'W', ['AH','AI','AJ'] ),
-              Text("Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              Text("Обивка/Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'obivkaCargiFio', product['AK'], 'AK', employeeOb),
               _dropDownStatus(product['id'], "Статус: ", 'obivkaCargiStatus', product['AL'], 'AL', ['AM','AN','AO'] ),
             ]
@@ -219,10 +420,10 @@ class _DetailsPageState extends State<DetailsPage> {
         child:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              Text("Паралонка/Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'paralonCargiFio', product['AU'], 'AU', employeeOb),
               _dropDownStatus(product['id'], "Статус: ", 'paralonCargiStatus', product['AV'], 'AV', ['AW','AX','AY']),
-              Text("Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              Text("Паралонка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'paralonIzgFio', product['AP'], 'AP', employeeOb),
               _dropDownStatus(product['id'], "Статус: ", 'paralonIzgStatus', product['AQ'], 'AQ', ['AR','AS','AT'] ),
             ]
@@ -248,11 +449,11 @@ class _DetailsPageState extends State<DetailsPage> {
                     ]
                 ),
                 Container(
-                    padding: new EdgeInsets.only(left: 10.0, bottom: 0.0, top: 0.0, right: 10.0),
+                    padding: new EdgeInsets.only(left: 0.0, bottom: 0.0, top: 0.0, right: 0.0),
                     child: _dropDownDate(widget.params['AE']),
                 ),
 
-                _rowParam("Дата: ", product['D']),
+                _rowParam("Дата клиента: ", product['D']),
                 //_rowParam("Дата производства: ", product['AE']),
 
                 _rowParam("Толщина спинки: ", ''),
@@ -288,58 +489,11 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                     ]
                 ),
-                _buildObivka(product)
+
             ]
         )
     );
   }
-
-  Widget build(BuildContext context) {
-    _ctx = context;
-    Map <String, dynamic> product = widget.params;
-    //dynamic currentFilter = widget.params['filter'];
-    return Scaffold(
-      key: key,
-
-      appBar: AppBar(
-        title: Text(product['A']),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            semanticLabel: 'arrow_back',
-          ),
-          onPressed: () {
-            Navigator.pop(_ctx, { 'params' : product , 'changed': widget.changed});
-            /*Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OrdersPage(params: product)),
-            );*/
-          },
-        ),
-        bottom: PreferredSize(
-            preferredSize: Size(double.infinity, 4.0),
-            child: SizedBox(
-                height: 4.0,
-                child: ProgressBar(widget.isLoading)
-            )
-        ),
-      ),
-      body: SingleChildScrollView(
-        //margin: new EdgeInsets.only(left: 5.0, bottom: 10.0, top: 10.0, right: 5.0),
-        child: Container(
-            //padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
-            child:Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              //mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildPanel(product),
-              ],
-            ),
-        ),
-      ),
-    );
-  }
-
 
   Widget _rowParam(title, value) {
     return Row(
@@ -451,7 +605,10 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   Widget _dropDownDate(valueDate) {
-    final TextStyle valueStyle = Theme.of(context).textTheme.body1;
+    if (userType != 10) {
+      return _rowParam("Дата производства: ", valueDate);
+    }
+    //final TextStyle valueStyle = Theme.of(context).textTheme.body1;
 
     return new Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -461,7 +618,7 @@ class _DetailsPageState extends State<DetailsPage> {
           child: new _InputDateDropdown(
             labelText: 'Дата производства:',
             valueText: valueDate,
-            valueStyle: valueStyle,
+            //valueStyle: valueStyle,
             onPressed: () {
               _selectDate(context, valueDate);
             },
@@ -476,8 +633,6 @@ class _DetailsPageState extends State<DetailsPage> {
     bool result;
     await Api.updateOrderStatus(recordId, value).then( (value) {
       result = value;
-      print('2=');
-      print(result);
     });
     return result;
 
@@ -493,8 +648,7 @@ class _DetailsPageState extends State<DetailsPage> {
     if (status[i] == 'Выполнен' ) {
       result[column[0]] = value;
     }
-    print(recordId);
-    print(result);
+
     if (result != null) {
       Api.updateOrderStatus(recordId, result);
       return true;
@@ -626,7 +780,11 @@ class _InputDateDropdown extends StatelessWidget {
   }
 }
 
-
+getUserType() async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  int getUserType = await preferences.getInt("type");
+  return getUserType;
+}
 
 
 

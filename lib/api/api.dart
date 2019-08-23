@@ -121,8 +121,6 @@ class Api {
 
   static Future<List<dynamic>> fetchOrdersAll(dynamic filterItems) async {
     String filter = '&filter='+jsonEncode(filterItems);
-
-    print(filter);
     String path = 'accounting/orders?_dc=1563489532611&page=1&start=0&per-page=300&sort=[{"property":"AE","direction":"ASC"}]';
 
     String token;
@@ -130,9 +128,9 @@ class Api {
       token = value;
     });
     var url =_url+path+'&auth_token='+token+filter;
-    print('Get ordersAll=');
-    print(filter);
+    print('Api: fetchOrdersAll========================');
     print(url);
+    print(filter);
 
     final response = await http.get(
         url,

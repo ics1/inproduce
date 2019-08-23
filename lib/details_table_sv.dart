@@ -11,11 +11,13 @@ import 'components/input_date_dropdown.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 
-List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко'];
+List <String> employeeSt= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов'];
 List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
+List <String> statusKr = ['','Крой'];
+
 List <String> statusKeys = ['','5', '4', '2', '3', '1'];
 
-class DataTableDemo extends StatefulWidget {
+class TableSveika extends StatefulWidget {
   static const String routeName = '/material/data-table';
 
 
@@ -23,10 +25,10 @@ class DataTableDemo extends StatefulWidget {
   List<DateTime> _date = [new DateTime.now().add(Duration(days: 1)), new DateTime.now().add(Duration(days: 7))];
 
   @override
-  _DataTableDemoState createState() => _DataTableDemoState();
+  _TableSveikaState createState() => _TableSveikaState();
 }
 
-class _DataTableDemoState extends State<DataTableDemo> {
+class _TableSveikaState extends State<TableSveika> {
   Map <String, dynamic> filter = {'AE' : {'>': DateFormat('dd.MM.yy').format(DateTime.now().add(Duration(days: -1)))}};
   Future<List<dynamic>> orders = Api.fetchOrdersAll({'AE' : {'>': DateFormat('dd.MM.yy').format(DateTime.now().add(Duration(days: -1)))}});
   int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
@@ -51,26 +53,26 @@ class _DataTableDemoState extends State<DataTableDemo> {
 
     _filter.addListener(() {
 
-    if (_filter.text.length > 3) {
-      print(_filter.text.indexOf(','));
-      if (_filter.text.indexOf(',') > 0) {
-        List ids = _filter.text.split(",");
-        setState(() {
-          filter = {"A": {'in': ids}};
-          orders = Api.fetchOrdersAll(filter);
-        });
+      if (_filter.text.length > 3) {
+        print(_filter.text.indexOf(','));
+        if (_filter.text.indexOf(',') > 0) {
+          List ids = _filter.text.split(",");
+          setState(() {
+            filter = {"A": {'in': ids}};
+            orders = Api.fetchOrdersAll(filter);
+          });
+        } else {
+          setState(() {
+            filter = {"A": _filter.text};
+            orders = Api.fetchOrdersAll(filter);
+          });
+        }
       } else {
         setState(() {
-          filter = {"A": _filter.text};
+          filter = _getBaseFilter();
           orders = Api.fetchOrdersAll(filter);
         });
       }
-    } else {
-      setState(() {
-        filter = _getBaseFilter();
-        orders = Api.fetchOrdersAll(filter);
-      });
-    }
 
     });
   }
@@ -94,6 +96,7 @@ class _DataTableDemoState extends State<DataTableDemo> {
     if (_buildActions.length == 0 && _dessertsDataSource.selectedRowCount > 0) {
       _buildActions.add(_getDropDownState('Исполнитель', 'employeeSt', employeeSt));
       _buildActions.add(_getDropDownState('Статус', 'statusSt', status));
+      _buildActions.add(_getDropDownState('Крой', 'statusKr', statusKr));
       //_buildActions.add(_getDropDownState());
       _buildActions.add(_dropDownDate(DateFormat('dd.MM.yy').format(DateTime.now())));
 
@@ -164,14 +167,32 @@ class _DataTableDemoState extends State<DataTableDemo> {
       if ( widget.stateStatus['statusSt'] == '') {
         date = '';
       }
+
       Map<String, dynamic> result = {
         'fields': {
-          'AZ'  : widget.stateStatus['employeeSt'],
-          'BA'  : statusKeys[index],
-          'BB'  : date,
+          'BO'  : widget.stateStatus['employeeSt'],
+          'BP'  : statusKeys[index],
+          'BQ'  : date,
+          'BR'  : '',
+          'BS'  : '',
+          'BT'  : '',
+          'BU'  : '',
+          'BV'  : '',
+          'BW'  : '',
+          'BX'  : ''
         },
         'ids' : _dessertsDataSource.getSelected()
       };
+      int indexKr = statusKr.indexOf(widget.stateStatus['statusKr']);
+      print('2=');
+      print(indexKr);
+      if (indexKr == 1) {
+        result['fields']['BV'] = widget.stateStatus['employeeSt'];
+        result['fields']['BW'] = indexKr;
+        result['fields']['BX'] = date;
+      }
+
+
       Provider.of<IsLoading>(context, listen: false).setState(true);
       print(widget.stateStatus.length);
       print(widget.stateStatus);
@@ -180,8 +201,8 @@ class _DataTableDemoState extends State<DataTableDemo> {
       Api.updateAll(result).then((value){
         if (value == true) {
           key.currentState.showSnackBar(new SnackBar(
-              backgroundColor: Colors.green,
-              content: new Text("Изменения сохранены!"),
+            backgroundColor: Colors.green,
+            content: new Text("Изменения сохранены!"),
           ));
           Provider.of<IsLoading>(context, listen: false).setState(false);
           _dessertsDataSource.unSelectedAll();
@@ -234,29 +255,29 @@ class _DataTableDemoState extends State<DataTableDemo> {
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         return Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-             new DropdownButton<String>(
-              value: widget.stateStatus[stateName],
-              items: employeeSt.map<DropdownMenuItem<String>>((String value) {
-                var i = employeeSt.indexOf(value);
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value, style: TextStyle(fontSize:14)),
-                );
-              }).toList(),
-              onChanged: (String newValue) {
-                setState(() {
-                  widget.stateStatus[stateName] = newValue;
-                });
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              new DropdownButton<String>(
+                value: widget.stateStatus[stateName],
+                items: employeeSt.map<DropdownMenuItem<String>>((String value) {
+                  var i = employeeSt.indexOf(value);
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: TextStyle(fontSize:14)),
+                  );
+                }).toList(),
+                onChanged: (String newValue) {
+                  setState(() {
+                    widget.stateStatus[stateName] = newValue;
+                  });
 
-                _changeFilter(stateName);
+                  _changeFilter(stateName);
 
-              },
-            )
-        ]);
+                },
+              )
+            ]);
       },
     );
   }
@@ -292,21 +313,21 @@ class _DataTableDemoState extends State<DataTableDemo> {
         bottom: PreferredSize(
             preferredSize: Size(double.infinity, 4.0),
             child: SizedBox(
-                height: 4.0,
-                child: Consumer<IsLoading>(
-                  builder: (context, loader, child) => ProgressBar(loader.value),
-                ),//ProgressBar(widget.isLoading)
+              height: 4.0,
+              child: Consumer<IsLoading>(
+                builder: (context, loader, child) => ProgressBar(loader.value),
+              ),//ProgressBar(widget.isLoading)
             )
         ),
       ),
       body: Scrollbar(
-        child: ListView(
-          padding: const EdgeInsets.all(20.0),
-          children: <Widget>[
-            _builderFuture()
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: <Widget>[
+              _builderFuture()
 
-          ],
-        )
+            ],
+          )
       ),
 
     );
@@ -320,7 +341,8 @@ class _DataTableDemoState extends State<DataTableDemo> {
           Order order;
           _orders = [];
           for (Map<String, dynamic> item in snapshot.data) {
-            order = Order(item['A'], item['AE'], item['I'], (item['AZ'])??'', item['BA']??'', item['BB']??'');
+            order = Order(item['A'], item['AE'], item['I'], (item['BO'])??'', item['BP']??'',  item['BQ']??'', item['BR']??'', item['BS']??'',
+              item['BV']??'',item['BW']??'',item['BX']??'',);
 
             _orders.add(order);
           }
@@ -420,12 +442,24 @@ class _DataTableDemoState extends State<DataTableDemo> {
         ),
         DataColumn(
           label: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Статус'),
-              _getDropDownState('Статус', 'statusStFilter', status),
-            ]
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Статус'),
+                _getDropDownState('Статус', 'statusStFilter', status),
+              ]
+          ),
+          tooltip: 'The total amount of food energy in the given serving size.',
+          numeric: false,
+          onSort: (int columnIndex, bool ascending) => _sort<String>((Order d) => d.status, columnIndex, ascending),
+        ),
+        DataColumn(
+          label: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Крой'),
+              ]
           ),
           tooltip: 'The total amount of food energy in the given serving size.',
           numeric: false,
@@ -454,8 +488,8 @@ class _DataTableDemoState extends State<DataTableDemo> {
       print(widget.stateStatus[stateName]);
       if (widget.stateStatus[stateName] == '') {
         setState(() {
-          if (filter['BA']!=null) {
-            filter.remove('BA');
+          if (filter['BP']!=null) {
+            filter.remove('BP');
           }
           if (filter.length == 0) {
             filter = _getBaseFilter();
@@ -465,7 +499,7 @@ class _DataTableDemoState extends State<DataTableDemo> {
       } else {
         int index = status.indexOf(widget.stateStatus[stateName]);
         setState(() {
-          filter['BA'] = statusKeys[index];
+          filter['BP'] = statusKeys[index];
           orders = Api.fetchOrdersAll(filter);
         });
       }
@@ -473,8 +507,8 @@ class _DataTableDemoState extends State<DataTableDemo> {
     if (stateName == 'employeeStFilter') {
       if (widget.stateStatus[stateName] == '') {
         setState(() {
-          if (filter['AZ']!=null) {
-            filter.remove('AZ');
+          if (filter['BO']!=null) {
+            filter.remove('BO');
           }
           if (filter.length == 0) {
             filter = {};
@@ -487,7 +521,7 @@ class _DataTableDemoState extends State<DataTableDemo> {
         setState(() {
           print(widget.stateStatus[stateName]);
           print(filter);
-          filter['AZ'] = widget.stateStatus[stateName];
+          filter['BO'] = widget.stateStatus[stateName];
 
           orders = Api.fetchOrdersAll(filter);
         });
@@ -499,8 +533,8 @@ class _DataTableDemoState extends State<DataTableDemo> {
     if (stateName == 'dateIzgFilter') {
       if (widget.stateStatus[stateName] == '') {
         setState(() {
-          if (filter['BB'] != null) {
-            filter.remove('BB');
+          if (filter['BS'] != null) {
+            filter.remove('BS');
           }
           if (filter.length == 0) {
             filter = _getBaseFilter();
@@ -515,7 +549,7 @@ class _DataTableDemoState extends State<DataTableDemo> {
           if (filter.length == 0) {
             filter = {};
           }
-          filter['BB'] = widget.stateStatus[stateName];
+          filter['BS'] = widget.stateStatus[stateName];
           orders = Api.fetchOrdersAll(filter);
         });
       }
@@ -680,6 +714,8 @@ class DessertDataSource extends DataTableSource {
         DataCell(Text('${dessert.name}')),
         DataCell(Text('${dessert.fio}')),
         DataCell(Text('${dessert.status}')),
+        DataCell(Text('${dessert.statusKr}')),
+
         //DataCell(_getDropDownState(dessert.fio, 'employeeSt'+index.toString(), employeeSt)),
         //DataCell(_getDropDownState(status[statusIndex], 'statusSt'+index.toString(), status)),
         DataCell(Text('${dessert.dateIzg}')),
@@ -709,8 +745,8 @@ class DessertDataSource extends DataTableSource {
 
   selectedAll() {
     for (Order item in _desserts) {
-        item.selected = true;
-        _selectedCount ++;
+      item.selected = true;
+      _selectedCount ++;
     }
     notifyListeners();
   }
@@ -734,12 +770,18 @@ class DessertDataSource extends DataTableSource {
 }
 
 class Order {
-  Order(this.id, this.dateInproduce, this.name, this.fio, this.status, this.dateIzg);
+  Order(this.id, this.dateInproduce, this.name, this.fio, this.status, this.dateIzg, this.statusVt, this.statusOt, this.fioKr, this.statusKr, this.dateIzgKr);
   final String id;
   final String dateInproduce;
   final String name;
   final String fio;
   final String status;
   final String dateIzg;
+  final String statusVt;
+  final String statusOt;
+  final String fioKr;
+  final String statusKr;
+  final String dateIzgKr;
+
   bool selected = false;
 }

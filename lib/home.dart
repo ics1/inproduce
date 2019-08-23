@@ -24,13 +24,16 @@ class Todo {
 }
 
 class HomePage extends StatefulWidget {
-  dynamic dropdownValue;
+  Map <String, String> dropdownValue = {};
   static DateTime now = new DateTime.now();
   DateFormat dateFormat = new DateFormat('dd.MM.yy');
   List <dynamic> range = [[0,6], [-1,5], [-2,4], [-3,3], [-4,2], [-5,7], [0,7]];
   int weekday = now.weekday;
 
+
   List<DateTime> _date = [new DateTime.now().add(Duration(days: 1)), new DateTime.now().add(Duration(days: 7))];
+
+
   Future<List<dynamic>> post;// = Future(null);//Api.fetchPost(null);
   Map <String, dynamic> filter = {};
   Decimal coefSumTotal = Decimal.parse('0.0');
@@ -51,7 +54,9 @@ class _HomePageState extends State<HomePage> {
   int userType;
   String userFio;
   BuildContext _ctx;
-
+  String columnDate = 'AE';//BB
+  String columnStatus = 'W';//BA
+  String columnFio = 'Z';
 
   @override
   _HomePageState() {
@@ -60,7 +65,7 @@ class _HomePageState extends State<HomePage> {
   }
   didUpdateWidget(obj) {
     super.didUpdateWidget(obj);
-    print('didUpdateWidget=');
+    print('HOME PAGE didUpdateWidget ==============');
     setStartFilter();
   }
   @override
@@ -68,57 +73,55 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     print('initstate home=');
     setStartFilter();
+
   }
   setStartFilter() {
     setState(() {
       widget._date = [new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][0])), new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][1]))];
-      widget.filter['date'] = [widget.dateFormat.format(widget._date[0]),widget.dateFormat.format(widget._date[1])];
     });
-
     getUserType().then((value) => setType(value));
   }
+
   setType(value) {
     userType = value;
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
+
+
     if (userType == 10) {
       setState(() {
-        widget.post = Api.fetchPost(widget.filter);
+        widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
+        widget.post = Api.fetchOrdersAll(widget.filter);
       });
     } else {
+      if (userType == 40) {
+        columnDate = 'BB';
+        columnStatus = 'BA';
+        columnFio = 'AZ';
+      }
+      setState(() {
+        widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
+      });
       getUserFio().then((erg) => setFilterFio(erg));
-
     }
     return userType;
   }
 
   setFilterFio(value) {
-    print('userFio=');
-    print(value);
-    print(userType);
     setState(() {
-      if (userType == 30) {
-        widget.filter['fio'] = value;
-      }
-      if (userType == 40) {
-        widget.filter['fioSt'] = value;
-      }
-
-      widget.post = Api.fetchPost(widget.filter);
+      widget.filter[columnFio] = value;
+      widget.post = Api.fetchOrdersAll(widget.filter);
     });
   }
 
   Future <List<dynamic>> isSetFilter() async {
     var filterPref = await getFilterPref();
     if (filterPref != null) {
-      print('filterPref=');
-      print(filterPref);
-      return Api.fetchPost(filterPref);
+      return Api.fetchOrdersAll(filterPref);
     } else {
-      return Api.fetchPost(widget.filter);
+      return Api.fetchOrdersAll(widget.filter);
     }
-    //var list = await Future.wait(getFilterPref());
   }
 
 
@@ -126,20 +129,25 @@ class _HomePageState extends State<HomePage> {
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
   List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко'];
+  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко'];
 
-  _buildDropDown(int userType) {
+  _buildDropDown(int userType, List<String> list, stateName) {
     if (userType == 10) {
       return DropdownButton<String>(
-        value: (widget.dropdownValue != null) ? widget.dropdownValue :  '0',
+        value: (widget.dropdownValue[stateName] != null) ? widget.dropdownValue[stateName] :  '0',
         onChanged: (String newValue) {
           setState(() {
-            widget.filter['fio'] = employee[int.parse(newValue)];
-            widget.post = Api.fetchPost(widget.filter);
-            widget.dropdownValue = newValue;
+            if(list[int.parse(newValue)] == 'Все') {
+              widget.filter.remove(columnFio);
+            } else {
+              widget.filter[columnFio] = list[int.parse(newValue)];
+            }
+            widget.post = Api.fetchOrdersAll(widget.filter);
+            widget.dropdownValue[stateName] = newValue;
           });
         },
-        items: employee.map<DropdownMenuItem<String>>((String value) {
-          var i = employee.indexOf(value);
+        items: list.map<DropdownMenuItem<String>>((String value) {
+          var i = list.indexOf(value);
           return DropdownMenuItem<String>(
             value: i.toString(),
             child: Text(value),
@@ -210,21 +218,20 @@ class _HomePageState extends State<HomePage> {
   _navigateOrders(BuildContext context, item) async {
     Map<String, dynamic> filterOrders = {};
     if (widget.filter != null) filterOrders = widget.filter;
-    filterOrders['date'] = item['headerValue'];
-    filterOrders['range'] = widget._date;
+    filterOrders[columnDate] = item['headerValue'];
+    //filterOrders[columnDate] = widget._date;
     final result = await Navigator.push(
       _ctx,
-      MaterialPageRoute(builder: (context) => OrdersPage(params: {'filter': filterOrders})),
+      MaterialPageRoute(builder: (context) => OrdersPage(params: {'filter': filterOrders, 'dateValue' : item['headerValue'], 'range' : widget._date} )),
     );
 
     if (result != null) {
-      result['params']['filter'].remove('date');
-      print(result);
+      result['params']['filter'].remove(columnDate);
       setState(() {
         widget.filter = result['params']['filter'];
-        widget._date = result['params']['filter']['range'];
-        widget.filter['date'] = [widget.dateFormat.format(widget._date[0]),widget.dateFormat.format(widget._date[1])];
-        widget.post = Api.fetchPost(widget.filter);
+        widget._date = result['params']['range'];
+        widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
+        widget.post = Api.fetchOrdersAll(widget.filter);
 
       });
 
@@ -242,7 +249,6 @@ class _HomePageState extends State<HomePage> {
         locale: Localizations.localeOf(context).toString());
 
     Widget _buildRow(item, index) {
-
 
       String dayWeek = DateFormat('MEd','ru').format(DateFormat('dd.MM.yy').parse(item['headerValue']));
       return ListTile(
@@ -267,6 +273,7 @@ class _HomePageState extends State<HomePage> {
           shrinkWrap: true,
           itemCount: item.length,
           itemBuilder: (BuildContext context, int index) {
+
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -280,12 +287,13 @@ class _HomePageState extends State<HomePage> {
                     child: _buildRow(item[index], index),
                   ),
 
-              ]
+                ]
             );
           }
       );
     }
     dynamic coefSumTotal1 = 0;
+
     return new WillPopScope(
       onWillPop: _onBackPressed,
       child: Scaffold(
@@ -294,15 +302,17 @@ class _HomePageState extends State<HomePage> {
 
           title: Text('Greensofa'),
           actions: <Widget>[
-            /*IconButton(
-            icon: Icon(
-              Icons.search,
-              semanticLabel: 'search',
+            IconButton(
+              icon: Icon(
+                Icons.refresh,
+                semanticLabel: 'refresh',
+              ),
+              onPressed: () {
+                setState(() {
+                  widget.post = Api.fetchOrdersAll(widget.filter);
+                });
+              },
             ),
-            onPressed: () {
-              print('Search button');
-            },
-          ),*/
             IconButton(
               icon: Icon(
                 Icons.tune,
@@ -318,18 +328,13 @@ class _HomePageState extends State<HomePage> {
                     lastDate: new DateTime(2020)
                 );
                 if (picked != null && picked.length == 2) {
-                  print(picked);
                   setState(() {
                     widget._date = picked;
-                    var dateFormat = new DateFormat('dd.MM.yy');
-                    print(dateFormat.format(picked[0]));
-                    widget.filter['date'] =[dateFormat.format(picked[0]),dateFormat.format(picked[1])];
-
-                    widget.post = Api.fetchPost(widget.filter);
-                    //_birthdayController.text = picked.toString();
+                    widget.filter[columnDate] = {'>=':widget.dateFormat.format(picked[0]), '<=':widget.dateFormat.format(picked[1])};
+                    widget.post = Api.fetchOrdersAll(widget.filter);
                   });
                 }
-                print('Filter button');
+
               },
             ),
           ],
@@ -346,7 +351,7 @@ class _HomePageState extends State<HomePage> {
                           //padding: new EdgeInsets.only(left: 0.0, bottom: 0, top: 10.0),
                             margin: new EdgeInsets.only(left: 15.0, bottom: 0, top: 10.0, right: 15.0),
 
-                            child: _buildDropDown(userType)
+                            child: _buildDropDown(userType, employee, 'employeeState')
                         ),
                       ),
 
@@ -356,9 +361,6 @@ class _HomePageState extends State<HomePage> {
                 FutureBuilder<List<dynamic>>(
                   future: widget.post,
                   builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                    print('snapshot.hasData=');
-                    print(snapshot.hasData);
-
                     if (snapshot.hasData) {
                       dynamic totalArray = _getArray(snapshot.data);
                       return Container(
@@ -377,8 +379,6 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.all(8.0),
                               splashColor: Colors.blueAccent,
                               onPressed: () {
-                                print('refresh filter=');
-                                print(widget.filter);
                                 setStartFilter();
                               },
                               child: Text(
@@ -461,6 +461,12 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(_ctx).pushReplacementNamed("/orders-table");
           },
+        ),
+        ListTile(
+          title: Text('Швейка'),
+          onTap: () {
+            Navigator.of(_ctx).pushReplacementNamed("/orders-table-shveka");
+          },
         )
 
       ]);
@@ -492,68 +498,58 @@ class _HomePageState extends State<HomePage> {
 
   dynamic _getArray(data) {
     List listExpand = [];
-    List namesValue = [];
-    String dataValue = '';
-    int index = 0;
-    Decimal coefSum = Decimal.parse('0');
-    Decimal coefPlSum = Decimal.parse('0');
 
-    Decimal AA, G;
+    int index = 0;
+    Decimal AB, AC;
     Decimal coefSumTotal = Decimal.parse('0');
     Decimal coefPlSumTotal = Decimal.parse('0');
 
     dynamic item;
+    Map <String, dynamic> dataDate = {};
+    String currentDate;
+
     for (var i = 0; i < data.length; i++) {
+
       item = data[i];
-      if (index == 0) dataValue = item['AE'];
-      if (item['V'] == '') {
-        item['V'] = '0,0';
+      currentDate = item[columnDate];
+      if (currentDate == null || currentDate=='') {
+        continue;
       }
-      if (item['G'] == '') {
-        item['G'] = '0,0';
-      }
-      if ((index!=0 && dataValue != item['AE']) || index == data.length-1) {
-        if (index == data.length-1) {
-          AA = Decimal.parse(item['V'].replaceAll(',','.'));
-          G = Decimal.parse(item['G'].replaceAll(',','.'));
-
-          coefSum = Decimal.parse(coefSum.toStringAsFixed(2)) + Decimal.parse(AA.toStringAsFixed(2));// double.parse(item['AA']);
-          coefPlSum = Decimal.parse(coefPlSum.toStringAsFixed(2)) + Decimal.parse(G.toStringAsFixed(2));// double.parse(item['G']);
-
-          namesValue.add(item);
-        }
-        listExpand.add({
-          'headerValue': dataValue,
-          'expandedValue': namesValue,
-          'coefSum' : coefSum/Decimal.parse('7860'),
-          'coefPlSum' : coefPlSum/Decimal.parse('7860'),
-
-        });
-        dataValue = item['AE'];
-        coefSumTotal = coefSumTotal + coefSum;
-        coefPlSumTotal = coefPlSumTotal + coefPlSum;
-
-        coefSum = Decimal.parse('0');
-        coefPlSum = Decimal.parse('0');
-
-        namesValue = [];
-
+      //new
+      if (dataDate[currentDate] == null) {
+        dataDate[currentDate] = {
+          'coefSum' : Decimal.parse('0'),
+          'coefPlSum' : Decimal.parse('0'),
+          'headerValue' : currentDate
+        };
       }
 
+      if (item['AB'] == '') {
+        item['AB'] = '0,0';
+      }
+      if (item['AA'] == '') {
+        item['AA'] = '0,0';
+      }
 
-      AA = Decimal.parse(item['V'].replaceAll(',','.'));
-      coefSum = Decimal.parse(coefSum.toStringAsFixed(2)) + Decimal.parse(AA.toStringAsFixed(2));// double.parse(item['AA']);
-      G = Decimal.parse(item['G'].replaceAll(',','.'));
-      coefPlSum = Decimal.parse(coefPlSum.toStringAsFixed(2)) + Decimal.parse(G.toStringAsFixed(2));// double.parse(item['AA']);
-      namesValue.add(item);
+      AB = Decimal.parse(item['AB'].replaceAll(',','.'));
+      AC = Decimal.parse(item['AA'].replaceAll(',','.'));
+
+      dataDate[currentDate]['coefSum'] += (item[columnStatus] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
+      dataDate[currentDate]['coefPlSum'] += Decimal.parse(AC.toStringAsFixed(2));
+
+      coefSumTotal = coefSumTotal + Decimal.parse(AB.toStringAsFixed(2));
+      coefPlSumTotal = coefPlSumTotal + Decimal.parse(AC.toStringAsFixed(2));
+
       index++;
     }
-    coefSumTotal = coefSumTotal/ Decimal.parse('7860');
-    coefPlSumTotal = coefPlSumTotal/ Decimal.parse('7860');
 
     widget.coefSumTotal = coefSumTotal;
     widget.coefPlSumTotal = coefPlSumTotal;
+    dataDate.forEach((i, value) {
+      listExpand.add(value);
+    });
 
+    listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
     return {'listExpand': listExpand, 'coefSum': coefSumTotal, 'coefPlSum': coefPlSumTotal};
   }
 }
@@ -573,9 +569,7 @@ Future<void> logout() async{
 
 getUserType() async {
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  print('getUserType=');
   int getUserType = await preferences.getInt("type");
-  print(getUserType);
   return getUserType;
 }
 

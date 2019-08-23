@@ -6,7 +6,7 @@ DateTime picked = new DateTime.now();
 
 class InputDateDropdown extends StatefulWidget {
   final String labelText;
-  final String valueText;
+  String valueText;
   final TextStyle valueStyle;
   final VoidCallback onPressed;
   final Widget child;
@@ -40,12 +40,14 @@ class InputDateDropdownState extends State<InputDateDropdown> {
     super.initState();
     setState(() {
       _valueText = (widget.valueText)?? new DateFormat('dd.MM.yy').format(picked);
+
     });
   }
 
   void setDate(value) {
     setState(() {
       _valueText = value;
+      widget.valueText  = _valueText;
     });
 
   }
@@ -65,6 +67,17 @@ class InputDateDropdownState extends State<InputDateDropdown> {
               color: Theme.of(context).brightness == Brightness.light
                   ? Colors.grey.shade700
                   : Colors.white70),
+          new IconButton(
+            icon: new Icon(Icons.close),
+            onPressed: () {
+              setState(() {
+                _valueText = '';
+                widget.valueText  = _valueText;
+                widget.onPressed();
+              });
+
+            }
+          )
         ],
       ),
     );
@@ -78,6 +91,7 @@ class InputDateDropdownState extends State<InputDateDropdown> {
 
     setState(() {
       _valueText = new DateFormat('dd.MM.yy').format(picked);
+      widget.valueText  = _valueText;
     });
     widget.onPressed();
   }
@@ -86,6 +100,9 @@ class InputDateDropdownState extends State<InputDateDropdown> {
 
 
 Future<Null> _selectDate(context, dateValue, onSelectDateFun) async {
+  if (dateValue == '' ) {
+    dateValue = DateFormat('dd.MM.yy').format(new DateTime.now());
+  }
   DateTime dateFormat = new DateFormat('dd.MM.yy').parse(dateValue).add(Duration(milliseconds: DateTime(1970 + 2000).millisecondsSinceEpoch+24*60*60*100));
   picked = await showDatePicker(
       context: context,
