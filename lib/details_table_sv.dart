@@ -378,7 +378,7 @@ class _TableSveikaState extends State<TableSveika> {
             this._searchIcon = new Icon(Icons.close);
             this._appBarTitle = new TextField(
               controller: _filter,
-              //autofocus: true,
+              autofocus: true,
               decoration: new InputDecoration(
                   prefixIcon: new Icon(Icons.search),
                   hintText: 'Поиск...'

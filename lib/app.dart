@@ -56,7 +56,7 @@ class GreenSofaApp extends StatelessWidget {
         '/orders':         (BuildContext context) => new OrdersPage(),
         '/orders-all':         (BuildContext context) => new OrdersAllPage(),
         '/orders-table':         (BuildContext context) => new DataTableDemo(),
-      '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
+        '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
         '/table':         (BuildContext context) => new MyApp(),
         '/' :          (BuildContext context) => new LoginPage(),
       },

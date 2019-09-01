@@ -71,7 +71,7 @@ class _DetailsPageState extends State<DetailsPage> {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
 
-    if (userType == 10) {
+    if (userType == 10 || userType == 0) {
 
     } else {
       if (userType == 40) {
@@ -130,13 +130,14 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   List<Widget> _getBody(product) {
-    if (userType == 10) { //admin
+    if (userType == 10 || userType == 0) { //admin
       return <Widget> [
         _buildDescription(product),
+        _getStausStolarka(product),
+        _getStausShveika(product),
         _buildObivka(product),
         _buildParalon(product),
-        _buildStolarka(product),
-        _buildShveika(product),
+
       ];
     }
     if (userType == 30) { //obivka 30
@@ -155,14 +156,23 @@ class _DetailsPageState extends State<DetailsPage> {
         _buildStolarka(product),
       ];
     }
-    if (userType == 50) { // shveika 50
+    if (userType == 50 || userType == 51) { // shveika 50
       return [
         _buildDescription(product),
         _getStausStolarka(product),
         _buildShveika(product),
+        _buildKroi(product),
       ];
     }
-    if (userType == 60) { // paralonka 60
+    if (userType == 60 || userType == 61) { // kroi 50
+      return [
+        _buildDescription(product),
+        _getStausStolarka(product),
+        _getStausShveika(product),
+        _buildKroi(product),
+      ];
+    }
+    if (userType == 70) { // paralonka 70
       return [
         _buildDescription(product),
         _getStausStolarka(product),
@@ -329,47 +339,17 @@ class _DetailsPageState extends State<DetailsPage> {
               Text("Швейка/Пошив", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'shveikaPoshivFio', product['BO'], 'BO', employeeSv),
               _dropDownStatus(product['id'], "Статус: ", 'shveikaPoshivStatus', product['BP'], 'BP', ['BS','BT','BU'] ),
+            ]
+        )
+    );
+  }
 
-              /*Center(
-                child:
-                  CheckboxListTile(
-                    title: const Text('Втяжка'),
-                    value: (widget.stateStatus['shveikaVtyagkaStatus']!=null) ? widget.stateStatus['shveikaVtyagkaStatus'] : (product['BQ']=='1' ? true : false),
-                    onChanged: (bool value) {
-                      String valueStatus = (value) ? '1' : '0';
-                      changeStatus(product['id'], {'BQ' : valueStatus }).then((value) {
-                        if (value) {
-                          setState(() {
-                            widget.stateStatus['shveikaVtyagkaStatus'] = value;
-                            widget.changed = true;
-                          });
-                        }
-                      });
-                    },
-                  ),
-
-
-              ),
-              Center(
-                child:
-                CheckboxListTile(
-                  title: const Text('Отстрочка'),
-                  value: (widget.stateStatus['shveikaOtstrochaStatus']!=null) ? widget.stateStatus['shveikaOtstrochaStatus'] : (product['BR']=='1' ? true : false),
-                  onChanged: (bool value) {
-                    String valueStatus = (value) ? '1' : '0';
-                    changeStatus(product['id'], {'BR' : valueStatus }).then((value) {
-                      if (value) {
-                        setState(() {
-                          widget.stateStatus['shveikaOtstrochaStatus'] = value;
-                          widget.changed = true;
-                        });
-                      }
-                    });
-                  },
-                  //secondary: const Icon(Icons.hourglass_empty),
-                ),
-              ),
-              */
+  Widget _buildKroi(product) {
+    return  Container(
+        padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text("Швейка/Крой", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'shveikaKroiFio', product['BV'], 'BV', employeeSv),
               _dropDownStatus(product['id'], "Статус: ", 'shveikaKroiStatus', product['BW'], 'BW', ['BX','BY','BZ'] ),
@@ -458,7 +438,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
                 _rowParam("Толщина спинки: ", ''),
                 _rowParam("Тип: ", product['E']),
-                _rowParam("Материал: ", product['L']),
+                _rowParam("Материал: ", product['L']+" "+product['M']),
                 _rowParam("Ножки: ", product['N']),
                 _rowParam("Пуговицы: ", product['O']),
                 _rowParam("Отстрочка: ", product['P']),
@@ -565,30 +545,6 @@ class _DetailsPageState extends State<DetailsPage> {
                 var now = new DateTime.now();
                 var date = new DateFormat('dd-MM-yyyy hh:mm');
                 changeStatusTime(productId, newValue, timeColumns, date.format(now));
-                /*changeStatus(productId, {column : newValue}).then((value) {
-                  print('1=');
-                  print(value);
-                  if (value == true) {
-                    setState(() {
-                      widget.stateStatus[stateName] = newValue;
-                      widget.changed = true;
-                    });
-                    var now = new DateTime.now();
-                    var date = new DateFormat('dd-MM-yyyy hh:mm');
-                    changeStatusTime(productId, newValue, timeColumns, date.format(now));
-                    key.currentState.showSnackBar(new SnackBar(
-                      content: new Text("Изменения сохранены!"),
-                    ));
-                  } else {
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text("Ошибка"),
-                          content: Text("Данные не сохранены!"),
-                        )
-                    );
-                  }
-                });*/
 
               },
               items: status.map<DropdownMenuItem<String>>((String value) {
@@ -605,7 +561,7 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   Widget _dropDownDate(valueDate) {
-    if (userType != 10) {
+    if (userType != 0) {
       return _rowParam("Дата производства: ", valueDate);
     }
     //final TextStyle valueStyle = Theme.of(context).textTheme.body1;

@@ -195,6 +195,7 @@ class _OrdersPageState extends State<OrdersPage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text(product['I'], style: TextStyle(fontSize: 14, color: Colors.black),),
+                _getClient(product),
                 Text("исп./обивка: "+product['Z'].toString()+" ("+product['W'].toString()+') ('+product['AE'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 Text("исп./столярка: "+product['AZ'].toString()+" ("+product['BA'].toString()+') ('+product['BB'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 Text("исп./швейка: "+product['BO'].toString()+" ("+product['BP'].toString()+') ('+product['BQ'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
@@ -219,6 +220,13 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
+  Widget _getClient(product) {
+    if (userType == 0) {
+      return Text("клиент: " + product['F'],
+          style: TextStyle(fontSize: 12, color: Colors.blue));
+    }
+    return Center();
+  }
   _navigateDetails(BuildContext context, product) async {
     // Navigator.push returns a Future that completes after calling
     // Navigator.pop on the Selection Screen.

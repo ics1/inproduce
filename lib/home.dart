@@ -87,9 +87,7 @@ class _HomePageState extends State<HomePage> {
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
-
-
-    if (userType == 10) {
+    if (userType == 10 || userType == 0) {
       setState(() {
         widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
         widget.post = Api.fetchOrdersAll(widget.filter);
@@ -99,6 +97,10 @@ class _HomePageState extends State<HomePage> {
         columnDate = 'BB';
         columnStatus = 'BA';
         columnFio = 'AZ';
+      }
+      if ([50,51,60].contains(userType)) {
+        Navigator.of(_ctx).pushReplacementNamed("/orders-all");
+        return null;
       }
       setState(() {
         widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
@@ -132,7 +134,7 @@ class _HomePageState extends State<HomePage> {
   List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко'];
 
   _buildDropDown(int userType, List<String> list, stateName) {
-    if (userType == 10) {
+    if (userType == 10 || userType == 0) {
       return DropdownButton<String>(
         value: (widget.dropdownValue[stateName] != null) ? widget.dropdownValue[stateName] :  '0',
         onChanged: (String newValue) {
@@ -160,27 +162,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   DateTime picked = new DateTime.now();
-
-
-  Future<Null> _selectDate() async {
-
-    picked = await showDatePicker(
-        context: context,
-        //initialDate: widget._date,
-        firstDate: new DateTime(1918),
-        //locale: Locale('ru', 'RU'),
-        lastDate: new DateTime.now());
-
-    if (picked != null) {
-      //print(picked);
-      setState(() {
-        //widget._date = picked;
-       //widget.filter['date'] = '0'+picked.day.toString() + '.0'+ picked.month.toString() +'.'+ '19';
-        //widget.post = Api.fetchPost(widget.filter);
-        //_birthdayController.text = picked.toString();
-      });
-    }
-  }
 
   Future<bool> _onBackPressed() async {
     return showDialog(
@@ -448,10 +429,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _getMenuDrawer() {
-    if (userType == 10) {
+    if (userType == 10 || userType == 0) {
       return Column( children: <Widget>[
         ListTile(
-          title: Text('Заказы'),
+          title: Text('Швейка'),
           onTap: () {
             Navigator.of(_ctx).pushReplacementNamed("/orders-all");
           }
@@ -462,12 +443,7 @@ class _HomePageState extends State<HomePage> {
             Navigator.of(_ctx).pushReplacementNamed("/orders-table");
           },
         ),
-        ListTile(
-          title: Text('Швейка'),
-          onTap: () {
-            Navigator.of(_ctx).pushReplacementNamed("/orders-table-shveka");
-          },
-        )
+
 
       ]);
     } else {
@@ -476,16 +452,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget  _getTotal() {
+
     return FutureBuilder<List<dynamic>>(
       future: widget.post,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           dynamic totalArray = _getArray(snapshot.data);
+          String pribil = '';
+          if (userType == 0) {
+            pribil = totalArray['pribil'].toStringAsFixed(1);
+          }
           return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Итого'),
-                Text(totalArray['coefPlSum'].toStringAsFixed(1)+'           '+totalArray['coefSum'].toStringAsFixed(1))
+                Text('Итого: '+pribil),
+                Text(totalArray['coefPlSum'].toStringAsFixed(1)+'           '+totalArray['coefSum'].toStringAsFixed(1)),
               ]
           );
 
@@ -507,9 +488,9 @@ class _HomePageState extends State<HomePage> {
     dynamic item;
     Map <String, dynamic> dataDate = {};
     String currentDate;
-
+    print(widget.filter);
     for (var i = 0; i < data.length; i++) {
-
+      //print(data[i]['AE']);
       item = data[i];
       currentDate = item[columnDate];
       if (currentDate == null || currentDate=='') {
@@ -545,12 +526,47 @@ class _HomePageState extends State<HomePage> {
 
     widget.coefSumTotal = coefSumTotal;
     widget.coefPlSumTotal = coefPlSumTotal;
+    int sandays = 0;
+    String weekday;
     dataDate.forEach((i, value) {
       listExpand.add(value);
+
+      weekday = DateFormat('EEEE','ru').format(DateFormat('dd.MM.yy').parse(value['headerValue']));
+
+      if (weekday == 'суббота' && weekday != 'воскресенье') {
+        sandays++;
+      }
+
     });
 
+    Decimal Pribil = Decimal.parse('0');
+    //DateFormat('dd.MM.yy').parse(listExpand[0]['headerValue']);
+    if (listExpand.length > 0) {
+      List arrayDate = listExpand[0]['headerValue'].split('.');
+      int daysWork = daysWorkInMonth(
+          int.parse(arrayDate[1]), int.parse(arrayDate[2]));
+      daysWork = daysWork + sandays;
+
+
+      Decimal Oborot = coefPlSumTotal * Decimal.parse('7860');
+      Decimal Sebestoimost = Oborot / Decimal.parse('2');
+      Decimal Zarplata = Oborot * Decimal.parse('30') / Decimal.parse('100');
+      Decimal ZatratiDen = Decimal.parse('330000') /
+          Decimal.parse(daysWork.toString());
+      Decimal ZatratiPeriod = ZatratiDen *
+          Decimal.parse(listExpand.length.toString());
+      Decimal DividentiDen = Decimal.parse('80000') /
+          Decimal.parse(daysWork.toString());
+      Decimal DividentiPeriod = DividentiDen *
+          Decimal.parse(listExpand.length.toString());
+
+      Pribil = Sebestoimost - Zarplata - ZatratiPeriod -
+          DividentiPeriod;
+    }
+
+
     listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
-    return {'listExpand': listExpand, 'coefSum': coefSumTotal, 'coefPlSum': coefPlSumTotal};
+    return {'listExpand': listExpand, 'coefSum': coefSumTotal, 'coefPlSum': coefPlSumTotal, 'pribil' : Pribil};
   }
 }
 
@@ -590,6 +606,59 @@ getFilterPref() async {
 Future<void> setFilterPref(dynamic filter) async{
   SharedPreferences pref = await SharedPreferences.getInstance();
   pref.setString("filter", filter.toString());
+}
+
+daysInMonth(int monthNum, int year)
+{
+
+  List<int> monthLength = new List(12);
+
+  monthLength[0] = 31;
+  monthLength[2] = 31;
+  monthLength[4] = 31;
+  monthLength[6] = 31;
+  monthLength[7] = 31;
+  monthLength[9] = 31;
+  monthLength[11] = 31;
+  monthLength[3] = 30;
+  monthLength[8] = 30;
+  monthLength[5] = 30;
+  monthLength[10] = 30;
+
+  if (leapYear(year) == true)
+    monthLength[1] = 29;
+  else
+    monthLength[1] = 28;
+
+  return monthLength[monthNum -1];
+}
+
+daysWorkInMonth(int monthNum, int year)
+{
+  String dayWeek;
+  int count = 0;
+  int days = daysInMonth(monthNum, year);
+  for (var i=0; i<days; i++) {
+    dayWeek = DateFormat('EEEE','ru').format(DateFormat('dd.MM.yy').parse((i+1).toString()+'.'+monthNum.toString()+'.'+year.toString()));
+    if (dayWeek != 'суббота' && dayWeek != 'воскресенье') {
+      count++;
+    }
+  }
+  return count;
+}
+
+leapYear(int year)
+{
+  bool leapYear = false;
+
+  bool leap =  ((year % 100 == 0) && (year % 400 != 0));
+  if (leap == true)
+    leapYear = false;
+  else if (year % 4 == 0)
+    leapYear = true;
+
+
+  return leapYear;
 }
 
 

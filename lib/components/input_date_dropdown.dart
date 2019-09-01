@@ -39,7 +39,7 @@ class InputDateDropdownState extends State<InputDateDropdown> {
   initState() {
     super.initState();
     setState(() {
-      _valueText = (widget.valueText)?? new DateFormat('dd.MM.yy').format(picked);
+      _valueText = widget.valueText;
 
     });
   }
@@ -100,10 +100,12 @@ class InputDateDropdownState extends State<InputDateDropdown> {
 
 
 Future<Null> _selectDate(context, dateValue, onSelectDateFun) async {
+  DateTime dateFormat;
   if (dateValue == '' ) {
     dateValue = DateFormat('dd.MM.yy').format(new DateTime.now());
   }
-  DateTime dateFormat = new DateFormat('dd.MM.yy').parse(dateValue).add(Duration(milliseconds: DateTime(1970 + 2000).millisecondsSinceEpoch+24*60*60*100));
+  dateFormat = new DateFormat('dd.MM.yy').parse(dateValue).add(Duration(milliseconds: DateTime(1970 + 2000).millisecondsSinceEpoch+24*60*60*100));
+
   picked = await showDatePicker(
       context: context,
       //locale:  Locale('ru', 'RU'),
