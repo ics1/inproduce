@@ -87,13 +87,13 @@ class _HomePageState extends State<HomePage> {
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
-    if (userType == 10 || userType == 0) {
+    if ([10,0,80,90].contains(userType)) {
       setState(() {
         widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
         widget.post = Api.fetchOrdersAll(widget.filter);
       });
     } else {
-      if (userType == 40) {
+      if ([40].contains(userType)) {
         columnDate = 'BB';
         columnStatus = 'BA';
         columnFio = 'AZ';
@@ -130,8 +130,8 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко'];
-  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко'];
+  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко','Коцюк', 'Некоцюк', 'Резерв'];
+  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков'];
 
   _buildDropDown(int userType, List<String> list, stateName) {
     if (userType == 10 || userType == 0) {
@@ -300,6 +300,9 @@ class _HomePageState extends State<HomePage> {
                 semanticLabel: 'filter',
               ),
               onPressed: () async {
+                if ([80, 90].contains(userType)) {
+                  return;
+                }
                 //_selectDate();
                 final List<DateTime> picked = await DateRagePicker.showDatePicker(
                     context: context,
@@ -432,10 +435,16 @@ class _HomePageState extends State<HomePage> {
     if (userType == 10 || userType == 0) {
       return Column( children: <Widget>[
         ListTile(
-          title: Text('Швейка'),
-          onTap: () {
-            Navigator.of(_ctx).pushReplacementNamed("/orders-all");
-          }
+            title: Text('Швейка'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-all");
+            }
+        ),
+        ListTile(
+            title: Text('Паралонка'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-paralon");
+            }
         ),
         ListTile(
           title: Text('Столярка'),
@@ -505,10 +514,10 @@ class _HomePageState extends State<HomePage> {
         };
       }
 
-      if (item['AB'] == '') {
+      if (item['AB'] == '' || item['AB'] == null) {
         item['AB'] = '0,0';
       }
-      if (item['AA'] == '') {
+      if (item['AA'] == '' || item['AA'] == null) {
         item['AA'] = '0,0';
       }
 
@@ -517,7 +526,9 @@ class _HomePageState extends State<HomePage> {
 
       dataDate[currentDate]['coefSum'] += (item[columnStatus] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
       dataDate[currentDate]['coefPlSum'] += Decimal.parse(AC.toStringAsFixed(2));
-
+      print(currentDate);
+      print(item[columnStatus]);
+      print(dataDate[currentDate]['coefSum'] );
       coefSumTotal = coefSumTotal + Decimal.parse(AB.toStringAsFixed(2));
       coefPlSumTotal = coefPlSumTotal + Decimal.parse(AC.toStringAsFixed(2));
 

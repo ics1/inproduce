@@ -47,8 +47,8 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _ctx;
   List <String> status = ['','Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKeys = ['','4', '2', '3', '1'];
-  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Ракицкий'];
-  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко'];
+  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Ракицкий','Коцюк','НеКоцюк'];
+  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков'];
   List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов'];
   DateFormat dateFormat;
 
@@ -74,7 +74,7 @@ class _DetailsPageState extends State<DetailsPage> {
     if (userType == 10 || userType == 0) {
 
     } else {
-      if (userType == 40) {
+      if ([40,80].contains(userType)) {
         columnDate = 'BB';
         columnStatus = 'BA';
         columnFio = 'AZ';
@@ -179,6 +179,14 @@ class _DetailsPageState extends State<DetailsPage> {
         _getStausShveika(product),
         _getStausObivka(product),
         _buildParalon(product),
+      ];
+    }
+    if ([80, 90].contains(userType)) { //upakovka 80
+      return [
+        _buildDescription(product),
+        _getStausStolarka(product),
+        _getStausShveika(product),
+        _getStausObivka(product)
       ];
     }
     return <Widget> [];

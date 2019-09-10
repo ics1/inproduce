@@ -21,6 +21,7 @@ import 'orders.dart';
 import 'orders_all.dart';
 import 'colors.dart';
 import 'details_table.dart';
+import 'orders_paralon.dart';
 import 'table.dart';
 import 'details_table_sv.dart';
 
@@ -55,6 +56,7 @@ class GreenSofaApp extends StatelessWidget {
         '/home':         (BuildContext context) => new HomePage(),
         '/orders':         (BuildContext context) => new OrdersPage(),
         '/orders-all':         (BuildContext context) => new OrdersAllPage(),
+        '/orders-paralon':         (BuildContext context) => new OrdersParalonPage(),
         '/orders-table':         (BuildContext context) => new DataTableDemo(),
         '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
         '/table':         (BuildContext context) => new MyApp(),

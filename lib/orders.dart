@@ -4,7 +4,7 @@ import 'details.dart';
 import 'package:decimal/decimal.dart';
 import 'api/api.dart';
 import 'details_table.dart';
-import 'form.dart';
+//import 'form.dart';
 import 'table.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -221,7 +221,7 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Widget _getClient(product) {
-    if (userType == 0) {
+    if ([0, 80, 90].contains(userType)) {
       return Text("клиент: " + product['F'],
           style: TextStyle(fontSize: 12, color: Colors.blue));
     }
