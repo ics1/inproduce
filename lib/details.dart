@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'api/api.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
+//import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailsPage extends StatefulWidget {
@@ -47,8 +47,8 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _ctx;
   List <String> status = ['','Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKeys = ['','4', '2', '3', '1'];
-  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Ракицкий','Коцюк','НеКоцюк'];
-  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков'];
+  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Лобенко', 'Резерв'];
+  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков', 'Ракицкий'];
   List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов'];
   DateFormat dateFormat;
 
@@ -57,14 +57,20 @@ class _DetailsPageState extends State<DetailsPage> {
   String columnDate = 'AE';//BB
   String columnStatus = 'W';//BA
   String columnFio = 'Z';
+  final _descrController = TextEditingController();
 
-  @override
-  void initState() {
+  void initState()  {
     // TODO: implement initState
     super.initState();
-    getUserType().then((value) => setType(value));
+    getUserType1().then((value) => setType(value));
+
+    _descrController.text = widget.params['AF'];
+    print('1=');
 
   }
+
+
+
   setType(value) {
     userType = value;
     if (userType == null) {
@@ -80,14 +86,23 @@ class _DetailsPageState extends State<DetailsPage> {
         columnFio = 'AZ';
       }
     }
+
     return userType;
   }
 
   final key = new GlobalKey<ScaffoldState>();
   List<bool> _data = [true, false, false, false];
+  //@override
   Widget build(BuildContext context) {
+    getUserType1().then((value) => setType(value));
+    print(userType);
     _ctx = context;
     Map <String, dynamic> product = widget.params;
+    print(product['user_type']);
+    if (userType == null) {
+      userType = product['user_type'];
+    }
+    //_descrController.text = product['AF'];
     //dynamic currentFilter = widget.params['filter'];
     return Scaffold(
       key: key,
@@ -129,7 +144,26 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
+  bool _value2 = true;
+  void _value2Changed(bool value) => setState(() => _value2 = value);
+
+  _getCheckBoxObivka() {
+    return new CheckboxListTile(
+      value: _value2,
+      onChanged: _value2Changed,
+      title: new Text('Делал все'),
+      controlAffinity: ListTileControlAffinity.leading,
+      //subtitle: new Text('Subtitle'),
+      //secondary: new Icon(Icons.archive),
+      activeColor: Colors.green,
+    );
+  }
+
   List<Widget> _getBody(product) {
+    List<Widget> per; // _buildDescription(product),
+    /*per = [
+      _buildDescription(product)
+    ];*/
     if (userType == 10 || userType == 0) { //admin
       return <Widget> [
         _buildDescription(product),
@@ -137,7 +171,8 @@ class _DetailsPageState extends State<DetailsPage> {
         _getStausShveika(product),
         _buildObivka(product),
         _buildParalon(product),
-
+        _buildUpakovka(product),
+        _getDescSave(product),
       ];
     }
     if (userType == 30) { //obivka 30
@@ -145,8 +180,12 @@ class _DetailsPageState extends State<DetailsPage> {
         _buildDescription(product),
         _getStausStolarka(product),
         _getStausShveika(product),
+        //_getCheckBoxObivka(),
         _buildObivka(product),
+        //_buildObivkaSelf(product),
         _buildParalon(product),
+        //_getStatusSave(product),
+        _getDescSave(product)
       ];
     }
     if (userType == 40) { // stolyarka 40
@@ -186,10 +225,34 @@ class _DetailsPageState extends State<DetailsPage> {
         _buildDescription(product),
         _getStausStolarka(product),
         _getStausShveika(product),
-        _getStausObivka(product)
+        _getStausObivka(product),
+        _buildUpakovka(product),
       ];
     }
     return <Widget> [];
+  }
+  _getDescSave(product) {
+    return Row(
+        children:[
+          Flexible(
+            child:  TextField(
+              //obscureText: true,
+              controller: _descrController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Описание',
+                suffixIcon: IconButton(
+                    icon: Icon(Icons.save),
+                    onPressed: () {
+                      debugPrint(_descrController.text);
+                      _changeData(product['id'], 'descrInput', 'AF', _descrController.text);
+                    }),
+              ),
+
+            ),
+          ),
+        ]
+    );
   }
   _getIconStatus(product, type) {
     String _columnStatus = 'BA';
@@ -402,6 +465,70 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
+  _getStatusSave(product) {
+    return Container(
+        padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _dropDownStatus(product['id'], "Статус: ", 'obivkaIzgStatus', product['W'], 'W', ['AH','AI','AJ'] ),
+              FlatButton(
+                color: Colors.blue,
+                textColor: Colors.white,
+                disabledColor: Colors.grey,
+                disabledTextColor: Colors.black,
+                padding: EdgeInsets.all(8.0),
+                splashColor: Colors.blueAccent,
+                onPressed: () {
+                  /*...*/
+                },
+                child: Text(
+                  "Сохранить",
+                  //style: TextStyle(fontSize: 20.0),
+                ),
+              )
+
+            ]
+        )
+    );
+  }
+
+  Widget _buildObivkaSelf(product) {
+    return  Container(
+        padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Обивка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              _dropDownEmployeeNoChange(product['id'], "Исполнитель: ", 'obivkaIzgiFio', product['Z'], 'Z', employeeOb),
+              //_dropDownStatus(product['id'], "Статус: ", 'obivkaIzgStatus', product['W'], 'W', ['AH','AI','AJ'] ),
+              Text("Обивка/Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              _dropDownEmployeeNoChange(product['id'], "Исполнитель: ", 'obivkaCargiFio', product['AK'], 'AK', employeeOb),
+              //_dropDownStatus(product['id'], "Статус: ", 'obivkaCargiStatus', product['AL'], 'AL', ['AM','AN','AO'] ),
+            ]
+        )
+    );
+
+  }
+
+
+  Widget _buildParalonSelf(product) {
+    return  Container(
+        padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Паралонка/Царги", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              _dropDownEmployeeNoChange(product['id'], "Исполнитель: ", 'paralonCargiFio', product['AU'], 'AU', employeeOb),
+              //_dropDownStatus(product['id'], "Статус: ", 'paralonCargiStatus', product['AV'], 'AV', ['AW','AX','AY']),
+              Text("Паралонка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              _dropDownEmployeeNoChange(product['id'], "Исполнитель: ", 'paralonIzgFio', product['AP'], 'AP', employeeOb),
+              //_dropDownStatus(product['id'], "Статус: ", 'paralonIzgStatus', product['AQ'], 'AQ', ['AR','AS','AT'] ),
+            ]
+        )
+    );
+  }
+
   Widget _buildParalon(product) {
     return  Container(
         padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
@@ -414,6 +541,23 @@ class _DetailsPageState extends State<DetailsPage> {
               Text("Паралонка/Изголовье", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               _dropDownEmployee(product['id'], "Исполнитель: ", 'paralonIzgFio', product['AP'], 'AP', employeeOb),
               _dropDownStatus(product['id'], "Статус: ", 'paralonIzgStatus', product['AQ'], 'AQ', ['AR','AS','AT'] ),
+            ]
+        )
+    );
+  }
+
+
+
+  Widget _buildUpakovka(product) {
+    return  Container(
+        padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 10.0, right: 10.0),
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Упаковка", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
+              //_dropDownEmployee(product['id'], "Исполнитель: ", 'paralonCargiFio', product['AU'], 'AU', employeeOb),
+              _dropDownStatus(product['id'], "Статус: ", 'upakovkaStatus', product['CF'], 'CF', ['CG','CH','CI']),
+
             ]
         )
     );
@@ -532,6 +676,37 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
+  Widget _dropDownEmployeeNoChange(productId, title, stateName, productValue, column, List<String> listEmployee) {
+
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Container(
+              padding: new EdgeInsets.only(left: 10.0, bottom: 5.0, top: 5.0, right: 10.0),
+              child: Text(title, style: TextStyle(color: Colors.black))
+          ),
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 5.0, top: 0, right: 10.0),
+            child: DropdownButton<String>(
+              value: (widget.stateStatus[stateName] != null) ? widget.stateStatus[stateName] : productValue,
+              onChanged: (String newValue) {
+                //_changeData(productId, stateName, column, newValue);
+              },
+              items: listEmployee.map<DropdownMenuItem<String>>((String value) {
+                var i = listEmployee.indexOf(value);
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+        ]
+    );
+  }
+
   Widget _dropDownStatus(productId, title, stateName, productStatusValue, column, timeColumns ) {
     return Row(
         mainAxisSize: MainAxisSize.max,
@@ -553,6 +728,42 @@ class _DetailsPageState extends State<DetailsPage> {
                 var now = new DateTime.now();
                 var date = new DateFormat('dd-MM-yyyy hh:mm');
                 changeStatusTime(productId, newValue, timeColumns, date.format(now));
+
+              },
+              items: status.map<DropdownMenuItem<String>>((String value) {
+                var i = status.indexOf(value);
+                return DropdownMenuItem<String>(
+                  value: statusKeys[i],
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+        ]
+    );
+  }
+
+  Widget _dropDownStatusNoChange(productId, title, stateName, productStatusValue, column, timeColumns ) {
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Container(
+              padding: new EdgeInsets.only(left: 10.0, bottom: 5.0, top: 5.0, right: 10.0),
+              child: Column( children: [
+                Text(title, style: TextStyle(color: Colors.black)),
+              ])
+          ),
+          Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 5.0, top: 0, right: 10.0),
+            child: DropdownButton<String>(
+              value: (widget.stateStatus[stateName] != null) ? widget.stateStatus[stateName] : productStatusValue,
+              onChanged: (String newValue) {
+                //_changeData(productId, stateName, column, newValue);
+                //var now = new DateTime.now();
+                //var date = new DateFormat('dd-MM-yyyy hh:mm');
+                //changeStatusTime(productId, newValue, timeColumns, date.format(now));
 
               },
               items: status.map<DropdownMenuItem<String>>((String value) {
@@ -744,10 +955,17 @@ class _InputDateDropdown extends StatelessWidget {
   }
 }
 
-getUserType() async {
+getUserType1() async {
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  int getUserType = await preferences.getInt("type");
+  int getUserType =  await preferences.getInt("type");
   return getUserType;
+}
+
+getUserFio() async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+
+  String getUserFio = await preferences.getString("fio");
+  return getUserFio;
 }
 
 

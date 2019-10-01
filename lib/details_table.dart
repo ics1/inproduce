@@ -11,7 +11,7 @@ import 'components/input_date_dropdown.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 
-List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков'];
+List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
 List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
 List <String> statusKeys = ['','5', '4', '2', '3', '1'];
 

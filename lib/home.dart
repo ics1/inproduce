@@ -102,6 +102,10 @@ class _HomePageState extends State<HomePage> {
         Navigator.of(_ctx).pushReplacementNamed("/orders-all");
         return null;
       }
+      if ([70].contains(userType)) {
+        Navigator.of(_ctx).pushReplacementNamed("/orders-paralon");
+        return null;
+      }
       setState(() {
         widget.filter[columnDate] = {'>=':widget.dateFormat.format(widget._date[0]), '<=':widget.dateFormat.format(widget._date[1])};
       });
@@ -130,8 +134,8 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко','Коцюк', 'Некоцюк', 'Резерв'];
-  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков'];
+  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко','Коцюк', 'Салыга', 'Лобенко', 'Резерв'];
+  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
 
   _buildDropDown(int userType, List<String> list, stateName) {
     if (userType == 10 || userType == 0) {
@@ -497,7 +501,7 @@ class _HomePageState extends State<HomePage> {
     dynamic item;
     Map <String, dynamic> dataDate = {};
     String currentDate;
-    print(widget.filter);
+    //print(widget.filter);
     for (var i = 0; i < data.length; i++) {
       //print(data[i]['AE']);
       item = data[i];
@@ -526,9 +530,9 @@ class _HomePageState extends State<HomePage> {
 
       dataDate[currentDate]['coefSum'] += (item[columnStatus] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
       dataDate[currentDate]['coefPlSum'] += Decimal.parse(AC.toStringAsFixed(2));
-      print(currentDate);
-      print(item[columnStatus]);
-      print(dataDate[currentDate]['coefSum'] );
+      //print(currentDate);
+      //print(item[columnStatus]);
+      //print(dataDate[currentDate]['coefSum'] );
       coefSumTotal = coefSumTotal + Decimal.parse(AB.toStringAsFixed(2));
       coefPlSumTotal = coefPlSumTotal + Decimal.parse(AC.toStringAsFixed(2));
 
