@@ -108,7 +108,7 @@ class _DataTableDemoState extends State<DataTableDemo> {
         initialFirstDate: widget._date[0],
         initialLastDate: widget._date[1],
         firstDate: new DateTime(2015),
-        lastDate: new DateTime(2020)
+        lastDate: new DateTime(2030)
     );
     if (pickedRange != null && pickedRange.length == 2) {
 

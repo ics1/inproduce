@@ -11,7 +11,7 @@ import 'components/input_date_dropdown.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 
-List <String> employeeSt= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов'];
+List <String> employeeSt= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников'];
 List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
 List <String> statusKr = ['','Крой'];
 
@@ -76,9 +76,11 @@ class _TableSveikaState extends State<TableSveika> {
 
     });
   }
+
   _getBaseFilter() {
     return {'AE':{'>=':dateFormat.format(widget._date[0]), '<=':dateFormat.format(widget._date[1])}};
   }
+
   void _sort<T>(Comparable<T> getField(Order d), int columnIndex, bool ascending) {
     _dessertsDataSource._sort<T>(getField, ascending);
     setState(() {

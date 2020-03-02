@@ -7,6 +7,7 @@ import 'app.dart';
 import 'components/input_date_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
+import 'package:decimal/decimal.dart';
 
 class OrdersAllPage extends StatefulWidget {
   dynamic post = null;
@@ -28,6 +29,8 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   String columnFio = 'BV';
   String _dateRangeText;
   DateTime _dateShvPoshivFilter;
+  DateTime _dateShvKroiFilter;
+
   int userType;
   String userFio;
 
@@ -35,7 +38,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   Map <String, dynamic> filter = {};
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
-  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов'];
+  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников'];
   List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
   List <String> statusNastil = ['','Да'];
@@ -305,15 +308,25 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       print('remove BY');
       filter.remove('BY');
     }
+    print(_dateShvPoshivFilter);
+    print(_dateShvKroiFilter);
 
-    if (_dateShvPoshivFilter != null) {
-      filter['BQ'] = dateFormat.format(_dateShvPoshivFilter);
+    if (_dateShvPoshivFilter != null || _dateShvKroiFilter != null) {
+      if (_dateShvKroiFilter != null) {
+        filter['BX'] = dateFormat.format(_dateShvKroiFilter);
+      }
+      if (_dateShvPoshivFilter != null) {
+        filter['BQ'] = dateFormat.format(_dateShvPoshivFilter);
+      }
       filter.remove(columnDate);
     } else {
-      print('remove BQ');
+      print('remove BQ or BX');
       filter.remove('BQ');
+      filter.remove('BX');
+
       filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
     }
+
     setState(() {
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
     });
@@ -325,7 +338,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
         initialFirstDate: _date[0],
         initialLastDate: _date[1],
         firstDate: new DateTime(2015),
-        lastDate: new DateTime(2020)
+        lastDate: new DateTime(2030)
     );
     if (picked != null && picked.length == 2) {
       setState(() {
@@ -361,6 +374,33 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     setState(() {
       _dateShvPoshivFilter = null;
       _textFieldController.text = '___.___.___';
+    });
+
+  }
+
+  void _setFilterDialogIconDateKroiPress() async {
+    picked = await showDatePicker(
+        context: context,
+        //locale:  Locale('ru', 'RU'),
+        initialDate: (_dateShvKroiFilter) ?? new DateTime.now(),
+        firstDate: new DateTime(1918),
+        lastDate: new DateTime(2030)
+    );
+
+    if (picked != null) {
+      setState(() {
+
+        _dateShvKroiFilter = picked;
+        _textKroiFieldController.text = dateFormat.format(_dateShvKroiFilter);
+      });
+
+    }
+  }
+
+  void _setFilterDialogIconDateKroiClearPress() async {
+    setState(() {
+      _dateShvKroiFilter = null;
+      _textKroiFieldController.text = '___.___.___';
     });
 
   }
@@ -461,8 +501,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                 //Text("исп./швейка: "+product['BO'].toString()+" ("+product['BP'].toString()+') ('+product['BQ'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 //Text("исп./крой: "+product['BV'].toString()+" ("+product['BW'].toString()+') ('+product['BX'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 Text("дата клиента: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                //Text("коэф: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
                 Text("дата производства:: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф вр/шв: "+product['CH'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
 
               ],
             ),
@@ -494,7 +535,100 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     );
   }
 
+  dynamic _getArray(data) {
+    List listExpand = [];
+
+    int index = 0;
+    Decimal CI, CH;
+    Decimal coefPoshivSumTotal = Decimal.parse('0');
+    Decimal coefKroiSumTotal = Decimal.parse('0');
+    //Decimal coefTimeSumTotal = Decimal.parse('0');
+
+
+    dynamic item;
+    Map <String, dynamic> dataDate = {};
+    String currentDate;
+    //print(widget.filter);
+    for (var i = 0; i < data.length; i++) {
+      //print(data[i]['AE']);
+      item = data[i];
+      currentDate = item[columnDate];
+      if (currentDate == null || currentDate=='') {
+        continue;
+      }
+      //new
+      if (dataDate[currentDate] == null) {
+        dataDate[currentDate] = {
+          //'coefSum' : Decimal.parse('0'),
+          'coefPoshivSum' : Decimal.parse('0'),
+          'coefKroiSum' : Decimal.parse('0'),
+          'headerValue' : currentDate
+        };
+      }
+
+      //if (item['AB'] == '' || item['AB'] == null) {
+      //  item['AB'] = '0,0';
+      //}
+      if (item['CI'] == '' || item['CI'] == null) {
+        item['CI'] = '0,0';
+      }
+      if (item['CH'] == '' || item['CH'] == null) {
+        item['CH'] = '0,0';
+      }
+
+      //AB = Decimal.parse(item['AB'].replaceAll(',','.'));
+      CI = Decimal.parse(item['CI'].replaceAll(',','.'));
+      CH = Decimal.parse(item['CH'].replaceAll(',','.'));
+
+
+      //dataDate[currentDate]['coefSum'] += (item['BP'] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
+      dataDate[currentDate]['coefPoshivSum'] += Decimal.parse(CH.toStringAsFixed(2));
+      dataDate[currentDate]['coefKroiSum'] += Decimal.parse(CI.toStringAsFixed(2));
+
+      //print(currentDate);
+      //print(item[columnStatus]);
+      //print(dataDate[currentDate]['coefSum'] );
+      //coefSumTotal = coefSumTotal + ((item['BP'] == '1') ? Decimal.parse(AC.toStringAsFixed(2)): Decimal.parse('0'));
+      coefPoshivSumTotal = coefPoshivSumTotal + Decimal.parse(CH.toStringAsFixed(2));
+      coefKroiSumTotal = coefKroiSumTotal + Decimal.parse(CI.toStringAsFixed(2));
+
+
+      index++;
+    }
+
+    listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
+    return {'listExpand': listExpand,  'coefPoshivSum': coefPoshivSumTotal, 'coefKroiSum': coefKroiSumTotal};
+  }
+
+  Widget  _getTotal() {
+
+    return FutureBuilder<List<dynamic>>(
+      future: widget.post,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          dynamic totalArray = _getArray(snapshot.data);
+          //String pribil = '';
+          //if (userType == 0) {
+          //  pribil = totalArray['pribil'].toStringAsFixed(1);
+          //}
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Итого: '),
+                Text(totalArray['coefPoshivSum'].toStringAsFixed(1)+'           '+totalArray['coefKroiSum'].toStringAsFixed(1)),
+              ]
+          );
+
+        }
+        // By default, show a loading spinner.
+        return Center();//Center( child:CircularProgressIndicator());
+      },
+    );
+  }
+
   TextEditingController _textFieldController = new TextEditingController();
+  TextEditingController _textKroiFieldController = new TextEditingController();
+
   TextEditingController _textFieldRangeController = new TextEditingController();
 
   Widget _getIconFilterDialog() {
@@ -536,9 +670,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
               _getDropDownState('Статус пошив:', 'statusShvFilter', status,[0,10,51, 50]),
               _getDropDownState('Исполн-ль крой:', 'employeeKroiFilter', employeeShv,[0,10,51]),
               _getDropDownState('Статус крой:', 'statusKrFilter', statusKr, [0,10,51,50,60]),
-              _getDropDownState('Настил:', 'statusNastilFilter', statusNastil, [0,10,51,50,60]),
+              //_getDropDownState('Настил:', 'statusNastilFilter', statusNastil, [0,10,51,50,60]),
               //_dropDownDate(DateFormat('dd.MM.yy').format(DateTime.now())),
               _getDropDownDateState(),
+              _getDropDownDateKroiState(),
 
               FlatButton(
                 color: Colors.blue,
@@ -628,9 +763,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
             if (value['filter'] == "AE") {
               return null;
             }
-            if (value['filter'] == "BQ") {
+            if (value['filter'] == "BQ" || value['filter'] == "BX") {
               return null;
             }
+
             setState(() {
               listFilter.removeWhere((entry) {
                 print('1=');
@@ -672,13 +808,19 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       }
       if (i == 'BO') {
         //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Дата пошива:'+value;
+        filterInfo = 'Пошив:'+value;
         listFilter.add({'value' : filterInfo, 'filter' : 'BO'});
       }
-      if (i == 'BQ') {
-        //int indexStatus = statusKr.indexOf(value);
-        filterInfo = value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BQ'});
+      if (i == 'BQ' || i == 'BX') {
+        if (i == 'BX' && i!= columnDate) {
+          //int indexStatus = statusKr.indexOf(value);
+          filterInfo = 'Дата крой:'+value;
+          listFilter.add({'value' : filterInfo, 'filter' : 'BX'});
+        } else {
+          //int indexStatus = statusKr.indexOf(value);
+          filterInfo = 'Дата пошив:'+value;
+          listFilter.add({'value': filterInfo, 'filter': 'BQ'});
+        }
       }
 
       if (i == 'BV') {
@@ -692,11 +834,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
         listFilter.add({'value' : filterInfo, 'filter' : 'BY'});
       }
 
-      if (i == 'BX' && i!= columnDate) {
-        //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Дата крой:'+value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BX'});
-      }
+
 
     });
 
@@ -929,6 +1067,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     //}
     return listWidgets;
   }
+
   Widget build(BuildContext context) {
     _ctx = context;
     //Provider.of<IsLoading>(context, listen: false).setState(true);
@@ -941,6 +1080,14 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       ),
 
       drawer: _getBuildDrawer(),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          height: 50.0,
+          padding: new EdgeInsets.only(left: 25.0, bottom: 5.0, top: 5.0, right: 25.0),
+          child: _getTotal(),
+        ),
+      ),
+
       resizeToAvoidBottomInset: false,
       //resizeToAvoidBottomPadding: true,
     );
@@ -1011,6 +1158,49 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
             ]
         ),
       ]
+    );
+  }
+
+  Widget _getDropDownDateKroiState() {
+    if (userType == 50 || userType == 60) {
+      return Center();
+    }
+    return Column(
+        children: [
+          Row(
+              children:[
+                Text('Дата кроя:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+              ]
+          ),
+          Row(
+              children:[
+                Container(
+                    width: 60,
+                    child: TextField(
+                      controller: _textKroiFieldController,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
+                      decoration: InputDecoration(hintText: "___.___.___"),
+                      enabled: false,
+                    )
+                ),
+                //_widgetDatePohiv,
+                IconButton(
+                    iconSize: 22.0,
+                    icon: Icon(
+                      Icons.calendar_today,
+                    ),
+                    onPressed: _setFilterDialogIconDateKroiPress
+                ),
+                IconButton(
+                    iconSize: 22.0,
+                    icon: Icon(
+                      Icons.close,
+                    ),
+                    onPressed: _setFilterDialogIconDateKroiClearPress
+                ),
+              ]
+          ),
+        ]
     );
   }
 

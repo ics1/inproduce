@@ -24,7 +24,7 @@ import 'details_table.dart';
 import 'orders_paralon.dart';
 import 'table.dart';
 import 'details_table_sv.dart';
-
+import 'orders_stolyarka.dart';
 
 class IsLoading with ChangeNotifier {
   bool value = false;
@@ -57,6 +57,7 @@ class GreenSofaApp extends StatelessWidget {
         '/orders':         (BuildContext context) => new OrdersPage(),
         '/orders-all':         (BuildContext context) => new OrdersAllPage(),
         '/orders-paralon':         (BuildContext context) => new OrdersParalonPage(),
+        '/orders-stolyarka':         (BuildContext context) => new OrdersStolyarkaPage(),
         '/orders-table':         (BuildContext context) => new DataTableDemo(),
         '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
         '/table':         (BuildContext context) => new MyApp(),

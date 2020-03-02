@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко','Коцюк', 'Салыга', 'Лобенко', 'Резерв'];
+  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк', 'Салыга', 'Коржов', 'Погорецкий','Оныськив', 'Резерв'];
   List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
 
   _buildDropDown(int userType, List<String> list, stateName) {
@@ -238,7 +238,7 @@ class _HomePageState extends State<HomePage> {
       String dayWeek = DateFormat('MEd','ru').format(DateFormat('dd.MM.yy').parse(item['headerValue']));
       return ListTile(
 
-          trailing: Text(item['coefPlSum'].toStringAsFixed(1) +'        '+item['coefSum'].toStringAsFixed(1) ),
+          trailing: Text(item['coefMoneySum'].toStringAsFixed(1) +'    '+item['coefShvSum'].toStringAsFixed(1) +'    '+item['coefTimeSum'].toStringAsFixed(1) +'    '+item['coefPlSum'].toStringAsFixed(1) +'    '+item['coefSum'].toStringAsFixed(1) ),
           title: Text(dayWeek, style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black)),
           enabled: true,
           onTap: () {
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                     initialFirstDate: widget._date[0],
                     initialLastDate: widget._date[1],
                     firstDate: new DateTime(2015),
-                    lastDate: new DateTime(2020)
+                    lastDate: new DateTime(2030)
                 );
                 if (picked != null && picked.length == 2) {
                   setState(() {
@@ -451,6 +451,12 @@ class _HomePageState extends State<HomePage> {
             }
         ),
         ListTile(
+            title: Text('Столярка New'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-stolyarka");
+            }
+        ),
+        ListTile(
           title: Text('Столярка'),
           onTap: () {
             Navigator.of(_ctx).pushReplacementNamed("/orders-table");
@@ -479,7 +485,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Итого: '+pribil),
-                Text(totalArray['coefPlSum'].toStringAsFixed(1)+'           '+totalArray['coefSum'].toStringAsFixed(1)),
+                Text(totalArray['coefMoneySum'].toStringAsFixed(1)+'   '+totalArray['coefShvSum'].toStringAsFixed(1)+'   '+totalArray['coefTimeSum'].toStringAsFixed(1)+'   '+totalArray['coefPlSum'].toStringAsFixed(1)+'   '+totalArray['coefSum'].toStringAsFixed(1)),
               ]
           );
 
@@ -494,9 +500,14 @@ class _HomePageState extends State<HomePage> {
     List listExpand = [];
 
     int index = 0;
-    Decimal AB, AC;
+    Decimal AB, AC, AG, AJ, AE;
     Decimal coefSumTotal = Decimal.parse('0');
     Decimal coefPlSumTotal = Decimal.parse('0');
+    Decimal coefTimeSumTotal = Decimal.parse('0');
+    Decimal coefShvSumTotal = Decimal.parse('0');
+    Decimal coefMoneySumTotal = Decimal.parse('0');
+
+
 
     dynamic item;
     Map <String, dynamic> dataDate = {};
@@ -514,6 +525,9 @@ class _HomePageState extends State<HomePage> {
         dataDate[currentDate] = {
           'coefSum' : Decimal.parse('0'),
           'coefPlSum' : Decimal.parse('0'),
+          'coefTimeSum' : Decimal.parse('0'),
+          'coefShvSum' : Decimal.parse('0'),
+          'coefMoneySum' : Decimal.parse('0'),
           'headerValue' : currentDate
         };
       }
@@ -524,17 +538,38 @@ class _HomePageState extends State<HomePage> {
       if (item['AA'] == '' || item['AA'] == null) {
         item['AA'] = '0,0';
       }
+      if (item['AG'] == '' || item['AG'] == null) {
+        item['AG'] = '0,0';
+      }
+      if (item['AJ'] == '' || item['AJ'] == null) {
+        item['AJ'] = '0,0';
+      }
+      if (item['AO'] == '' || item['AO'] == null) {
+        item['AO'] = '0,0';
+      }
 
       AB = Decimal.parse(item['AB'].replaceAll(',','.'));
       AC = Decimal.parse(item['AA'].replaceAll(',','.'));
+      AG = Decimal.parse(item['AG'].replaceAll(',','.'));
+      AJ = Decimal.parse(item['AJ'].replaceAll(',','.'));
+      AE = Decimal.parse(item['AO'].replaceAll(',','.'));
+
 
       dataDate[currentDate]['coefSum'] += (item[columnStatus] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
       dataDate[currentDate]['coefPlSum'] += Decimal.parse(AC.toStringAsFixed(2));
+      dataDate[currentDate]['coefTimeSum'] += Decimal.parse(AG.toStringAsFixed(2));
+      dataDate[currentDate]['coefShvSum'] += Decimal.parse(AJ.toStringAsFixed(2));
+      dataDate[currentDate]['coefMoneySum'] += Decimal.parse(AE.toStringAsFixed(2));
+
       //print(currentDate);
       //print(item[columnStatus]);
       //print(dataDate[currentDate]['coefSum'] );
       coefSumTotal = coefSumTotal + Decimal.parse(AB.toStringAsFixed(2));
       coefPlSumTotal = coefPlSumTotal + Decimal.parse(AC.toStringAsFixed(2));
+      coefTimeSumTotal = coefTimeSumTotal + Decimal.parse(AG.toStringAsFixed(2));
+      coefShvSumTotal = coefShvSumTotal + Decimal.parse(AJ.toStringAsFixed(2));
+      coefMoneySumTotal = coefMoneySumTotal + Decimal.parse(AE.toStringAsFixed(2));
+
 
       index++;
     }
@@ -560,28 +595,32 @@ class _HomePageState extends State<HomePage> {
       List arrayDate = listExpand[0]['headerValue'].split('.');
       int daysWork = daysWorkInMonth(
           int.parse(arrayDate[1]), int.parse(arrayDate[2]));
-      daysWork = daysWork + sandays;
+      //daysWork = daysWork + sandays;
 
 
-      Decimal Oborot = coefPlSumTotal * Decimal.parse('7860');
-      Decimal Sebestoimost = Oborot / Decimal.parse('2');
-      Decimal Zarplata = Oborot * Decimal.parse('30') / Decimal.parse('100');
-      Decimal ZatratiDen = Decimal.parse('330000') /
+      Decimal Oborot = coefMoneySumTotal * Decimal.parse('7860'); //2090760
+
+      Decimal Sebestoimost = Oborot * Decimal.parse('0.53'); //1108102
+
+      Decimal Zarplata = Oborot * Decimal.parse('27') / Decimal.parse('100'); //564300
+
+      Decimal ZatratiDen = Decimal.parse('400000') /
           Decimal.parse(daysWork.toString());
+      print(listExpand.length.toString());
       Decimal ZatratiPeriod = ZatratiDen *
           Decimal.parse(listExpand.length.toString());
-      Decimal DividentiDen = Decimal.parse('80000') /
+      Decimal DividentiDen = Decimal.parse('150000') /
           Decimal.parse(daysWork.toString());
       Decimal DividentiPeriod = DividentiDen *
           Decimal.parse(listExpand.length.toString());
 
       Pribil = Sebestoimost - Zarplata - ZatratiPeriod -
-          DividentiPeriod;
+          DividentiPeriod; //1108102-564300-400000-150000=
     }
 
 
     listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
-    return {'listExpand': listExpand, 'coefSum': coefSumTotal, 'coefPlSum': coefPlSumTotal, 'pribil' : Pribil};
+    return {'listExpand': listExpand, 'coefMoneySum': coefMoneySumTotal, 'coefShvSum': coefShvSumTotal, 'coefSum': coefSumTotal, 'coefPlSum': coefPlSumTotal, 'coefTimeSum': coefTimeSumTotal,'pribil' : Pribil};
   }
 }
 

@@ -3,6 +3,24 @@ import 'api/api.dart';
 import 'package:intl/intl.dart';
 //import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pdf;
+//import 'package:printing/printing.dart';
+import 'dart:io';
+import 'pdf_example.dart';
+import 'pdf/pdf_part1.dart';
+import 'pdf/document.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui' as ui;
+
+import 'dart:async';
+import 'dart:typed_data';
+import 'package:esc_pos_printer/esc_pos_printer.dart';
+
+import 'package:markdown/markdown.dart' as markdown;
+import 'package:path_provider/path_provider.dart';
 
 class DetailsPage extends StatefulWidget {
   final dynamic params;
@@ -47,9 +65,9 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _ctx;
   List <String> status = ['','Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKeys = ['','4', '2', '3', '1'];
-  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Лобенко', 'Резерв'];
+  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Коржов', 'Погорецкий','Оныськив', 'Резерв'];
   List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков', 'Ракицкий'];
-  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов'];
+  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов', 'Жильников'];
   DateFormat dateFormat;
 
   int userType;
@@ -58,6 +76,7 @@ class _DetailsPageState extends State<DetailsPage> {
   String columnStatus = 'W';//BA
   String columnFio = 'Z';
   final _descrController = TextEditingController();
+  final GlobalKey<State<StatefulWidget>> previewContainer = GlobalKey();
 
   void initState()  {
     // TODO: implement initState
@@ -94,6 +113,7 @@ class _DetailsPageState extends State<DetailsPage> {
   List<bool> _data = [true, false, false, false];
   //@override
   Widget build(BuildContext context) {
+
     getUserType1().then((value) => setType(value));
     print(userType);
     _ctx = context;
@@ -104,44 +124,124 @@ class _DetailsPageState extends State<DetailsPage> {
     }
     //_descrController.text = product['AF'];
     //dynamic currentFilter = widget.params['filter'];
-    return Scaffold(
-      key: key,
+    return RepaintBoundary(
+      key: previewContainer,
+      child:Scaffold(
+        key: key,
 
-      appBar: AppBar(
-        title: Text(product['A']),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            semanticLabel: 'arrow_back',
+        appBar: AppBar(
+          title: Text(product['A']),
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              semanticLabel: 'arrow_back',
+            ),
+            onPressed: () {
+              Navigator.pop(_ctx, { 'params' : product , 'changed': widget.changed});
+              /*Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => OrdersPage(params: product)),
+              );*/
+            },
           ),
-          onPressed: () {
-            Navigator.pop(_ctx, { 'params' : product , 'changed': widget.changed});
-            /*Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OrdersPage(params: product)),
-            );*/
-          },
-        ),
-        bottom: PreferredSize(
-            preferredSize: Size(double.infinity, 4.0),
-            child: SizedBox(
-                height: 4.0,
-                child: ProgressBar(widget.isLoading)
-            )
-        ),
-      ),
-      body: SingleChildScrollView(
-        //margin: new EdgeInsets.only(left: 5.0, bottom: 10.0, top: 10.0, right: 5.0),
-        child: Container(
-          padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 20.0, right: 10.0),
-          child:Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            //mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _getBody(product),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.print,
+                semanticLabel: 'print',
+              ),
+              onPressed: _printScreen// {
+                //await Printing.layoutPdf(
+                //onLayout: pdfExample);
+  //              Navigator.push(
+  //                _ctx,
+  //                MaterialPageRoute(builder: (context) => MyApp()),
+  //              );
+               // _printScreen();
+
+              //},
+            ),
+
+          ],
+          bottom: PreferredSize(
+              preferredSize: Size(double.infinity, 4.0),
+              child: SizedBox(
+                  height: 4.0,
+                  child: ProgressBar(widget.isLoading)
+              )
           ),
         ),
-      ),
+        body: SingleChildScrollView(
+          //margin: new EdgeInsets.only(left: 5.0, bottom: 10.0, top: 10.0, right: 5.0),
+          child: Container(
+            padding: new EdgeInsets.only(left: 10.0, bottom: 10.0, top: 20.0, right: 10.0),
+            child:Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              //mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: _getBody(product),
+            ),
+          ),
+        ),
+      )
     );
+  }
+
+  Future<void> _printScreen() async {
+    Printer.connect('192.168.0.106', port: 9100).then((printer) {
+      printer.println('Regular: aA bB cC dD eE fF gG hH iI jJ kK lL mM nN oO pP qQ rR sS tT uU vV wW xX yY zZ');
+      printer.println('Special 1: àÀ èÈ éÉ ûÛ üÜ çÇ ôÔ',
+          styles: PosStyles(codeTable: PosCodeTable.westEur));
+      printer.println('Special 2: blåbærgrød',
+          styles: PosStyles(codeTable: PosCodeTable.westEur));
+
+      printer.println('Bold text', styles: PosStyles(bold: true));
+      printer.println('Reverse text', styles: PosStyles(reverse: true));
+      printer.println('Underlined text',
+          styles: PosStyles(underline: true), linesAfter: 1);
+
+      printer.println('Align left', styles: PosStyles(align: PosTextAlign.left));
+      printer.println('Align center',
+          styles: PosStyles(align: PosTextAlign.center));
+      printer.println('Align right',
+          styles: PosStyles(align: PosTextAlign.right), linesAfter: 1);
+
+      printer.println('Text size 200%',
+          styles: PosStyles(
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+          ));
+
+      printer.cut();
+      printer.disconnect();
+    });
+    return;
+//    final RenderRepaintBoundary boundary =
+//    previewContainer.currentContext.findRenderObject();
+//    final ui.Image im = await boundary.toImage();
+//    final ByteData bytes =
+//    await im.toByteData(format: ui.ImageByteFormat.rawRgba);
+//    print('Print Screen ${im.width}x${im.height} ...');
+//
+//    Printing.layoutPdf(onLayout: (PdfPageFormat format) {
+//      final pdf.Document document = pdf.Document();
+//
+//      final PdfImage image = PdfImage(document.document,
+//          image: bytes.buffer.asUint8List(),
+//          width: im.width,
+//          height: im.height);
+//
+//      document.addPage(pdf.Page(
+//          pageFormat: format,
+//          build: (pdf.Context context) {
+//            return pdf.Center(
+//              child: pdf.Expanded(
+//                child: pdf.Image(image),
+//              ),
+//            ); // Center
+//          })); // Page
+//
+//      return document.save();
+//    });
   }
 
   bool _value2 = true;
@@ -561,6 +661,27 @@ class _DetailsPageState extends State<DetailsPage> {
             ]
         )
     );
+  }
+  //final Uint8List fontData = File('open-sans.ttf').readAsBytesSync();
+  //final ttf = pdf.Font.ttf(fontData.buffer.asByteData());
+
+  List<int> buildPdf(PdfPageFormat format) {
+//    final  pdf.Document doc = pdf.Document();
+//
+//    doc.addPage(
+//      pdf.Page(
+//        pageFormat: format,
+//        build: (pdf.Context context) {
+//          return pdf.Center(
+//            child: pdf.Text(widget.params['I']),
+//          ); //
+//        },
+//      ),
+//    );
+//
+//
+//
+//    return doc.save();
   }
 
   Widget _buildDescription(product) {
