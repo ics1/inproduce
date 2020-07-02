@@ -38,8 +38,8 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   Map <String, dynamic> filter = {};
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
-  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников'];
-  List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
+  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина'];
+  List <String> status = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Выполнен'];
   List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
   List <String> statusNastil = ['','Да'];
 
