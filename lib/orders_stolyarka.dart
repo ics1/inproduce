@@ -7,25 +7,26 @@ import 'app.dart';
 import 'components/input_date_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
+import 'package:decimal/decimal.dart';
 
-class OrdersParalonPage extends StatefulWidget {
+class OrdersStolyarkaPage extends StatefulWidget {
   dynamic post = null;
   //dynamic filter;
   dynamic dropdownValue;
-  OrdersParalonPage({Key key}) : super(key: key);
+  OrdersStolyarkaPage({Key key}) : super(key: key);
   @override
-  _OrdersParalonPageState createState() => _OrdersParalonPageState();
+  _OrdersStolyarkaPageState createState() => _OrdersStolyarkaPageState();
 
 }
 
-class _OrdersParalonPageState extends State<OrdersParalonPage> {
+class _OrdersStolyarkaPageState extends State<OrdersStolyarkaPage> {
   List <dynamic> _range = [[0,6], [0,5], [0,4], [0,3], [0,2], [0,7], [0,7]];
   List<DateTime> _date = [new DateTime.now().add(Duration(days: 1)), new DateTime.now().add(Duration(days: 7))];
   static DateTime _now = new DateTime.now();
   int _weekday = _now.weekday;
   DateFormat dateFormat = new DateFormat('dd.MM.yy');
   String columnDate = 'AE';
-  String columnFio = 'AP';
+  String columnFio = 'AZ';
   String _dateRangeText;
   DateTime _dateShvPoshivFilter;
   int userType;
@@ -35,9 +36,8 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
   Map <String, dynamic> filter = {};
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
-
-  //List <String> employeeShv= ['','Ракицкий','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Коцюк', 'Салыга', 'Резерв'];
-  List <String> employeeShv= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор', 'Резерв'];
+  //List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов'];
+  List <String> employeeShv= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Чабан', 'Отрышко', 'Жарков', 'Ракицкий', 'Тютюнник'];
   List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
   List <String> statusNastil = ['','Да'];
@@ -85,7 +85,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
           //filter.remove('BP');
           filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
           filter.remove('A');
-          if (userType == 50 || userType == 60) {
+          if (userType == 40) {
             filter[columnFio] = userFio;
           }
           widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -100,7 +100,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
           }
           setState(() {
             filter = {"A": {'in': ids}};
-            if (userType == 50 || userType == 60) {
+            if (userType == 40) {
               filter[columnFio] = userFio;
             }
             widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -125,7 +125,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
                 stateValues[i.toString()] = true ;
               }
               filter = {"A": {'in': ids}};
-              if (userType == 50 || userType == 60) {
+              if (userType == 40) {
                 filter[columnFio] = userFio;
               }
               widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -135,7 +135,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
           } else {
             setState(() {
               filter = {"A": _filter.text};
-              if (userType == 50 || userType == 60) {
+              if (userType == 40) {
                 filter[columnFio] = userFio;
               }
               widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -155,10 +155,10 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
-    if (userType == 60) {
-      columnDate = 'BX';
+    if (userType == 40) {
+      columnDate = 'AE';
       //columnStatus = 'BW';
-      columnFio = 'BV';
+      columnFio = 'AZ';
       filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
       getUserFio().then((erg) => setFilterFio(erg));
     } else {
@@ -213,24 +213,27 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
       print(stateStatus['statusShv']);
       if (stateStatus['statusShv']  != '') {
         result['fields'] = {
-          'AP': stateStatus['employeeShv'],
-          'AQ': statusKeys[index],
-          'AR': date,
-          'AS': '',
-          'AT': ''
+          'AZ': stateStatus['employeeShv'],
+          'BA': statusKeys[index],
+          'BB': date,
+          'BR': '',
+          'BS': '',
+          'BT': '',
+          'BU': ''
         };
       }
       int indexKr = statusKr.indexOf(stateStatus['statusKr']);
       print('2=');
       print(indexKr);
       if (indexKr == 1) {
-        result['fields']['AU'] = stateStatus['employeeOb'];
-        result['fields']['AV'] = indexKr;
-        result['fields']['AW'] = date;
+        result['fields']['BV'] = stateStatus['employeeShv'];
+        result['fields']['BW'] = indexKr;
+        result['fields']['BX'] = date;
+        result['fields']['BY'] = statusNastil.indexOf(stateStatus['statusNastil']);
       }
       result['ids']  = _stateSelected;
       Provider.of<IsLoading>(context, listen: false).setState(true);
-      Api.updateAll(result).then((value) {
+      Api.updateAll(result).then((value){
         if (value == true) {
           key.currentState.showSnackBar(new SnackBar(
             //backgroundColor: Colors.green,
@@ -266,35 +269,37 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
     int index = status.indexOf(stateStatus['statusShvFilter']);
 
     if (stateStatus['statusShvFilter'] !='' && stateStatus['statusShvFilter']!=null) {
-      filter['AQ'] = statusKeys[index];
+      filter['BA'] = statusKeys[index];
     } else {
-      filter.remove('AQ');
+      filter.remove('BA');
     }
     if (stateStatus['emploeeyShvFilter']!='' && stateStatus['emploeeyShvFilter']!=null) {
-      filter['AP'] = stateStatus['emploeeyShvFilter'];
+      filter['AZ'] = stateStatus['emploeeyShvFilter'];
     } else {
-      print('remove AP');
-      filter.remove('AP');
+      print('remove AZ');
+      filter.remove('AZ');
     }
 
-    if (stateStatus['statusKrFilter']!='' && stateStatus['statusKrFilter']!=null) {
-      index = statusKr.indexOf(stateStatus['statusKrFilter']);
-      filter['AV'] = index;
-    } else {
-      print('remove AV');
-      filter.remove('AV');
-    }
 
     if (stateStatus['employeeShvFilter']!='' && stateStatus['employeeShvFilter']!=null) {
-      filter['BO'] = stateStatus['employeeShvFilter'];
+      filter['AZ'] = stateStatus['employeeShvFilter'];
     } else {
-      print('remove BO');
-      filter.remove('BO');
+      print('remove AZ');
+      filter.remove('AZ');
     }
 
+    if (_dateShvPoshivFilter != null) {
+      filter['BB'] = dateFormat.format(_dateShvPoshivFilter);
+      filter.remove(columnDate);
+    } else {
+      print('remove BB');
+      filter.remove('BB');
+      filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
+    }
 
-
-
+    if (userType == 40) {
+      filter[columnFio] = userFio;
+    }
 
     setState(() {
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -307,7 +312,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
         initialFirstDate: _date[0],
         initialLastDate: _date[1],
         firstDate: new DateTime(2015),
-        lastDate: new DateTime(2020)
+        lastDate: new DateTime(2030)
     );
     if (picked != null && picked.length == 2) {
       setState(() {
@@ -362,6 +367,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
 
   void _getGridCardNavigateDetails(BuildContext context, product) async {
 
+    product['user_type'] = userType;
     final result = await Navigator.push(
       _ctx,
       MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
@@ -369,8 +375,9 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
 
     if (result['changed']) {
       setState(() {
-        //widget.post = Api.fetchOrders(null);
+        widget.post = Api.fetchOrdersAll(filter);
       });
+
     }
   }
 
@@ -414,40 +421,35 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text(product['I'], style: TextStyle(fontSize: 14, color: Colors.black),),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:[
-                      Expanded(flex:3, child:Text("обивка", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['Z'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['AE'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      _getGridCardIconStatus(product['W']),
-                ]),
-                Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:[
-                      Expanded(flex:3, child:Text("паралон/царги:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['AU'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['AW'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      _getGridCardIconStatus(product['AV']),
+                //Text("клиент: "+product['F'], style: TextStyle(fontSize: 12, color: Colors.blue)),
+                //Text("исп./обивка: "+product['Z'].toString()+" ("+product['W'].toString()+') ('+product['AE'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                //Text("исп./столярка: "+product['AZ'].toString()+" ("+product['BA'].toString()+') ('+product['BB'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
 
-                ]),
                 Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children:[
-                    Expanded(flex:3, child:Text("паралон/изголовье:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                    Expanded(flex:3,child:Text(product['AP'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                    Expanded(flex:2,child:Text(product['AR'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                    _getGridCardIconStatus(product['AQ']),
-                ]),
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:[
+                      Expanded(flex:3, child:Text("Столярка:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['AZ'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text(product['BB'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      _getGridCardIconStatus(product['BA']),
+
+                    ]),
+                Text("материал: "+product['L'].toString()+" "+product['M'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+
+                //Text("исп./швейка: "+product['BO'].toString()+" ("+product['BP'].toString()+') ('+product['BQ'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                //Text("исп./крой: "+product['BV'].toString()+" ("+product['BW'].toString()+') ('+product['BX'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text("дата клиента: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("дата производства:: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф вр/ст: "+product['AG'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+
               ],
             ),
           ),
           Container(
             width: 80,
-            child: CheckboxListTile(
+            child: (![0,10].contains(userType)) ? Text('') : CheckboxListTile(
               //title: const Text('Animate Slowly'),
               value: (stateValues[product['A']]) ?? false,//timeDilation != 1.0,
               onChanged: (bool value) {
@@ -468,6 +470,97 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
       ),
       onTap: () {
         _getGridCardNavigateDetails(_ctx, product);
+      },
+    );
+  }
+
+  dynamic _getArray(data) {
+    List listExpand = [];
+
+    int index = 0;
+    Decimal AB, AC, CH;
+    Decimal coefSumTotal = Decimal.parse('0');
+    Decimal coefPlSumTotal = Decimal.parse('0');
+    Decimal coefTimeSumTotal = Decimal.parse('0');
+
+
+    dynamic item;
+    Map <String, dynamic> dataDate = {};
+    String currentDate;
+    //print(widget.filter);
+    for (var i = 0; i < data.length; i++) {
+      //print(data[i]['AE']);
+      item = data[i];
+      currentDate = item[columnDate];
+      if (currentDate == null || currentDate=='') {
+        continue;
+      }
+      //new
+      if (dataDate[currentDate] == null) {
+        dataDate[currentDate] = {
+          'coefSum' : Decimal.parse('0'),
+          'coefPlSum' : Decimal.parse('0'),
+          'coefTimeSum' : Decimal.parse('0'),
+          'headerValue' : currentDate
+        };
+      }
+
+      if (item['AB'] == '' || item['AB'] == null) {
+        item['AB'] = '0,0';
+      }
+      if (item['AA'] == '' || item['AA'] == null) {
+        item['AA'] = '0,0';
+      }
+      if (item['AG'] == '' || item['AG'] == null) {
+        item['AG'] = '0,0';
+      }
+
+      //AB = Decimal.parse(item['AB'].replaceAll(',','.'));
+      AC = Decimal.parse(item['AA'].replaceAll(',','.'));
+      CH = Decimal.parse(item['AG'].replaceAll(',','.'));
+
+
+      dataDate[currentDate]['coefSum'] +=  Decimal.parse(AC.toStringAsFixed(2));
+      //dataDate[currentDate]['coefPlSum'] += Decimal.parse(AC.toStringAsFixed(2));
+      dataDate[currentDate]['coefTimeSum'] += Decimal.parse(CH.toStringAsFixed(2));
+
+      //print(currentDate);
+      //print(item[columnStatus]);
+      //print(dataDate[currentDate]['coefSum'] );
+      coefSumTotal = coefSumTotal +  Decimal.parse(AC.toStringAsFixed(2));
+      //coefPlSumTotal = coefPlSumTotal + Decimal.parse(AC.toStringAsFixed(2));
+      coefTimeSumTotal = coefTimeSumTotal + Decimal.parse(CH.toStringAsFixed(2));
+
+
+      index++;
+    }
+
+    listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
+    return {'listExpand': listExpand, 'coefSum': coefSumTotal, 'coefTimeSum': coefTimeSumTotal};
+  }
+
+  Widget  _getTotal() {
+
+    return FutureBuilder<List<dynamic>>(
+      future: widget.post,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          dynamic totalArray = _getArray(snapshot.data);
+          //String pribil = '';
+          //if (userType == 0) {
+          //  pribil = totalArray['pribil'].toStringAsFixed(1);
+          //}
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Итого: '),
+                Text('ст:'+totalArray['coefTimeSum'].toStringAsFixed(1)+'           '+'           об:'+totalArray['coefSum'].toStringAsFixed(1)),
+              ]
+          );
+
+        }
+        // By default, show a loading spinner.
+        return Center();//Center( child:CircularProgressIndicator());
       },
     );
   }
@@ -510,11 +603,9 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
                     ),
                   ]
               ),
-              _getDropDownState('Исполнитель', 'employeeShvFilter', employeeShv,[0,10,51]),
-              _getDropDownState('Статус пошив:', 'statusShvFilter', status,[0,10,51, 50]),
-              _getDropDownState('Исполн-ль крой:', 'employeeKroiFilter', employeeShv,[0,10,51]),
-              _getDropDownState('Статус крой:', 'statusKrFilter', statusKr, [0,10,51,50,60]),
-              _getDropDownState('Настил:', 'statusNastilFilter', statusNastil, [0,10,51,50,60]),
+              _getDropDownState('Исполнитель', 'employeeShvFilter', employeeShv,[0,10,41]),
+              _getDropDownState('Статус столярка:', 'statusShvFilter', status,[0,10,41, 40]),
+
               //_dropDownDate(DateFormat('dd.MM.yy').format(DateTime.now())),
               _getDropDownDateState(),
 
@@ -606,7 +697,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
             if (value['filter'] == "AE") {
               return null;
             }
-            if (value['filter'] == "BQ") {
+            if (value['filter'] == "BB") {
               return null;
             }
             setState(() {
@@ -638,42 +729,21 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
         filterInfo =  DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['>=']))+'-'+ DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['<=']));
         listFilter.add({'value' : filterInfo, 'filter' : columnDate});
       }
-      if (i == 'BP') {
+      if (i == 'BA') {
         int indexStatus = statusKeys.indexOf(value);
-        filterInfo = 'Пошив:'+ status[indexStatus];
-        listFilter.add({'value' : filterInfo, 'filter' : 'BP'});
+        filterInfo = 'Столярка:'+ status[indexStatus];
+        listFilter.add({'value' : filterInfo, 'filter' : 'BA'});
       }
-      if (i == 'BW') {
+
+      if (i == 'AZ') {
         //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Крой:'+ statusKr[value];
-        listFilter.add({'value' : filterInfo, 'filter' : 'BW'});
+        filterInfo = 'Исполнитель:'+value;
+        listFilter.add({'value' : filterInfo, 'filter' : 'AZ'});
       }
-      if (i == 'BO') {
-        //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Дата пошива:'+value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BO'});
-      }
-      if (i == 'BQ') {
+      if (i == 'BB') {
         //int indexStatus = statusKr.indexOf(value);
         filterInfo = value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BQ'});
-      }
-
-      if (i == 'BV') {
-        filterInfo = 'крой:'+ value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BV'});
-      }
-
-      if (i == 'BY') {
-        //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Настил:'+ statusNastil[value];
-        listFilter.add({'value' : filterInfo, 'filter' : 'BY'});
-      }
-
-      if (i == 'BX' && i!= columnDate) {
-        //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Дата крой:'+value;
-        listFilter.add({'value' : filterInfo, 'filter' : 'BX'});
+        listFilter.add({'value' : filterInfo, 'filter' : 'BB'});
       }
 
     });
@@ -705,14 +775,14 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
                       content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _getDropDownState('Исполнитель изг.', 'employeeShv', employeeShv, [0,10,51,50,60]),
-                            _getDropDownState('Статус изг.:', 'statusShv', status, [0,10,51,50]),
-                            _getDropDownState('Исполнитель царги', 'employeeOb', employeeShv, [0,10,51,50,60]),
-                            _getDropDownState('Статус царги.:', 'statusKr', statusKr, [0,10,51,50,60]),
+
+                            _getDropDownState('Исполнитель', 'employeeShv', employeeShv, [0,10,51,50,60]),
+                            _getDropDownState('Статус столярка:', 'statusShv', status, [0,10,51,50]),
                             _dropDownDate(dateFormat.format(DateTime.now())),
                             Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children:[
+
                                   RaisedButton(
                                     onPressed: () async {
                                       Navigator.of(context).pop();
@@ -733,6 +803,8 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
                                   ),
                                 ]
                             ),
+
+
                           ]
                       )
                   )
@@ -903,6 +975,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
     //}
     return listWidgets;
   }
+
   Widget build(BuildContext context) {
     _ctx = context;
     //Provider.of<IsLoading>(context, listen: false).setState(true);
@@ -915,6 +988,14 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
       ),
 
       drawer: _getBuildDrawer(),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          height: 50.0,
+          padding: new EdgeInsets.only(left: 25.0, bottom: 5.0, top: 5.0, right: 25.0),
+          child: _getTotal(),
+        ),
+      ),
+
       resizeToAvoidBottomInset: false,
       //resizeToAvoidBottomPadding: true,
     );
@@ -953,7 +1034,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
         children: [
           Row(
               children:[
-                Text('Дата пошива:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+                Text('Дата столярка:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
               ]
           ),
           Row(
@@ -1076,7 +1157,7 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
   }
 
   _getBaseFilter() {
-    return {'BP': '4'};
+    return {'BA': '4'};
   }
 
   getUserFio() async {

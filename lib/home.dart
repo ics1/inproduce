@@ -94,9 +94,11 @@ class _HomePageState extends State<HomePage> {
       });
     } else {
       if ([40].contains(userType)) {
-        columnDate = 'BB';
-        columnStatus = 'BA';
-        columnFio = 'AZ';
+        Navigator.of(_ctx).pushReplacementNamed("/orders-stolyarka");
+        return null;
+//        columnDate = 'BB';
+//        columnStatus = 'BA';
+//        columnFio = 'AZ';
       }
       if ([50,51,60].contains(userType)) {
         Navigator.of(_ctx).pushReplacementNamed("/orders-all");
@@ -134,7 +136,7 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк', 'Салыга', 'Коржов', 'Погорецкий','Оныськив', 'Резерв'];
+  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор','Долгиер', 'Резерв'];
   List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
 
   _buildDropDown(int userType, List<String> list, stateName) {

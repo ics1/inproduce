@@ -151,7 +151,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   setType(value) {
     userType = value;
-    print('1=');
+    print('2=');
     print(userType);
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
@@ -160,6 +160,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       columnDate = 'BX';
       //columnStatus = 'BW';
       columnFio = 'BV';
+      filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
+      getUserFio().then((erg) => setFilterFio(erg));
+    } else if (userType == 50) {
+      columnFio = 'BO';
       filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
       getUserFio().then((erg) => setFilterFio(erg));
     } else {
@@ -176,6 +180,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   setFilterFio(value) {
     userFio = value;
+    print(userFio);
     setState(() {
       filter[columnFio] = value;
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -326,7 +331,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
       filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
     }
-
+    if (userType == 50 || userType == 60) {
+      filter[columnFio] = userFio;
+    }
     setState(() {
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
     });
@@ -420,6 +427,18 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   void _getGridCardNavigateDetails(BuildContext context, product) async {
 
+//    final result = await Navigator.push(
+//      _ctx,
+//      MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
+//    );
+//
+//    if (result['changed']) {
+//      setState(() {
+//        //widget.post = Api.fetchOrders(null);
+//      });
+//    }
+
+    product['user_type'] = userType;
     final result = await Navigator.push(
       _ctx,
       MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
@@ -427,8 +446,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
     if (result['changed']) {
       setState(() {
-        //widget.post = Api.fetchOrders(null);
+        widget.post = Api.fetchOrdersAll(filter);
       });
+
     }
   }
 
@@ -502,8 +522,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                 //Text("исп./крой: "+product['BV'].toString()+" ("+product['BW'].toString()+') ('+product['BX'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 Text("дата клиента: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
                 Text("дата производства:: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("коэф: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("коэф вр/шв: "+product['CH'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф об: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф вр/шв/пош: "+product['CH'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                Text("коэф вр/шв/кр: "+product['CI'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
 
               ],
             ),
@@ -539,10 +560,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     List listExpand = [];
 
     int index = 0;
-    Decimal CI, CH;
+    Decimal CI, CH, AA;
     Decimal coefPoshivSumTotal = Decimal.parse('0');
     Decimal coefKroiSumTotal = Decimal.parse('0');
-    //Decimal coefTimeSumTotal = Decimal.parse('0');
+    Decimal coefSumTotal = Decimal.parse('0');
 
 
     dynamic item;
@@ -559,36 +580,36 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       //new
       if (dataDate[currentDate] == null) {
         dataDate[currentDate] = {
-          //'coefSum' : Decimal.parse('0'),
+          'coefSum' : Decimal.parse('0'),
           'coefPoshivSum' : Decimal.parse('0'),
           'coefKroiSum' : Decimal.parse('0'),
           'headerValue' : currentDate
         };
       }
 
-      //if (item['AB'] == '' || item['AB'] == null) {
-      //  item['AB'] = '0,0';
-      //}
-      if (item['CI'] == '' || item['CI'] == null) {
-        item['CI'] = '0,0';
+      if (item['AA'] == '' || item['AA'] == null) {
+        item['AA'] = '0,0';
       }
       if (item['CH'] == '' || item['CH'] == null) {
         item['CH'] = '0,0';
       }
+      if (item['CI'] == '' || item['CI'] == null) {
+        item['CI'] = '0,0';
+      }
 
-      //AB = Decimal.parse(item['AB'].replaceAll(',','.'));
+      AA = Decimal.parse(item['AA'].replaceAll(',','.'));
       CI = Decimal.parse(item['CI'].replaceAll(',','.'));
       CH = Decimal.parse(item['CH'].replaceAll(',','.'));
 
 
-      //dataDate[currentDate]['coefSum'] += (item['BP'] == '1') ? Decimal.parse(AC.toStringAsFixed(2)) : Decimal.parse('0');
+      dataDate[currentDate]['coefSum'] += Decimal.parse(AA.toStringAsFixed(2));
       dataDate[currentDate]['coefPoshivSum'] += Decimal.parse(CH.toStringAsFixed(2));
       dataDate[currentDate]['coefKroiSum'] += Decimal.parse(CI.toStringAsFixed(2));
 
       //print(currentDate);
       //print(item[columnStatus]);
       //print(dataDate[currentDate]['coefSum'] );
-      //coefSumTotal = coefSumTotal + ((item['BP'] == '1') ? Decimal.parse(AC.toStringAsFixed(2)): Decimal.parse('0'));
+      coefSumTotal = coefSumTotal + Decimal.parse(AA.toStringAsFixed(2));
       coefPoshivSumTotal = coefPoshivSumTotal + Decimal.parse(CH.toStringAsFixed(2));
       coefKroiSumTotal = coefKroiSumTotal + Decimal.parse(CI.toStringAsFixed(2));
 
@@ -597,7 +618,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     }
 
     listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
-    return {'listExpand': listExpand,  'coefPoshivSum': coefPoshivSumTotal, 'coefKroiSum': coefKroiSumTotal};
+    return {'listExpand': listExpand,  'coefSum': coefSumTotal, 'coefPoshivSum': coefPoshivSumTotal, 'coefKroiSum': coefKroiSumTotal};
   }
 
   Widget  _getTotal() {
@@ -615,7 +636,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Итого: '),
-                Text(totalArray['coefPoshivSum'].toStringAsFixed(1)+'           '+totalArray['coefKroiSum'].toStringAsFixed(1)),
+                Text('шв п:'+totalArray['coefPoshivSum'].toStringAsFixed(1)+'     шв кр:'+totalArray['coefKroiSum'].toStringAsFixed(1)+'      об:'+totalArray['coefSum'].toStringAsFixed(1)),
               ]
           );
 

@@ -36,7 +36,9 @@ class DetailsPage extends StatefulWidget {
       paralonIzgFio,
       paralonIzgStatus,
       obivkaIzgiFio,
-      obivkaIzgStatus;
+      obivkaIzgStatus,
+      upakovkaStatus,
+      upakovkaIzgStatus;
   DateTime _dateInproduce = DateTime.now();
   //Stream <bool> isLoading;
   Future<bool> isLoading;
@@ -65,9 +67,9 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _ctx;
   List <String> status = ['','Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
   List <String> statusKeys = ['','4', '2', '3', '1'];
-  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Коржов', 'Погорецкий','Оныськив', 'Резерв'];
-  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков', 'Ракицкий'];
-  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарукова', 'Овчарская', 'Логинов', 'Жильников'];
+  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Скрипник', 'Ткачук', 'Крейтор','Долгиер', 'Резерв'];
+  List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков', 'Ракицкий', 'Тютюнник', 'Жаров'];
+  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарунова', 'Овчарская', 'Логинов', 'Жильников'];
   DateFormat dateFormat;
 
   int userType;
@@ -656,7 +658,8 @@ class _DetailsPageState extends State<DetailsPage> {
             children: [
               Text("Упаковка", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black), softWrap: true),
               //_dropDownEmployee(product['id'], "Исполнитель: ", 'paralonCargiFio', product['AU'], 'AU', employeeOb),
-              _dropDownStatus(product['id'], "Статус: ", 'upakovkaStatus', product['CF'], 'CF', ['CG','CH','CI']),
+              _dropDownStatus(product['id'], "Статус царги: ", 'upakovkaStatus', product['CD'], 'CD', ['CE','CE','CE']),
+              _dropDownStatus(product['id'], "Статус: изголовье", 'upakovkaIzgStatus', product['CF'], 'CF', ['CG','CG','CG']),
 
             ]
         )
