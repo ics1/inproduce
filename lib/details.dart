@@ -67,9 +67,10 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _ctx;
   List <String> status = ['','Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Выполнен', 'Взят в работу, готовность завтра'];
   List <String> statusKeys = ['','4', '2', '3', '1', '5'];
-  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Скрипник', 'Ткачук', 'Крейтор','Долгиер', 'Ратников','Резерв'];
+  List <String> employeeOb= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Скрипник',
+    'Ткачук', 'Чеховский','Долгиер', 'Ратников','Гаврилашенко','Резерв'];
   List <String> employeeSt= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Жарков', 'Ракицкий', 'Тютюнник', 'Жаров', 'Скрипник'];
-  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарунова', 'Овчарская', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина'];
+  List <String> employeeSv= ['','Плукчи', 'Социгашева', 'Агарунова', 'Овчарская', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина','Меднова'  ];
   DateFormat dateFormat;
 
   int userType;
@@ -269,8 +270,8 @@ class _DetailsPageState extends State<DetailsPage> {
     if (userType == 10 || userType == 0) { //admin
       return <Widget> [
         _buildDescription(product),
-        _getStausStolarka(product),
         _getStausShveika(product),
+        _buildStolarka(product),
         _buildObivka(product),
         _buildParalon(product),
         _buildUpakovka(product),

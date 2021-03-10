@@ -48,7 +48,8 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
       _ctx = context;
 
-      List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга', 'Скрипник','Ткачук', 'Крейтор', 'Резерв'];
+      List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак',
+        'Кузьменко','Коцюк','Салыга', 'Скрипник','Ткачук', 'Чеховский', 'Резерв', 'Гаврилашенко'];
       return Scaffold(
         appBar: AppBar(
           brightness: Brightness.light,

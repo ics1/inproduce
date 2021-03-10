@@ -8,6 +8,8 @@ class Api {
   //factory Api() => _instance;
 
   static String _url = 'http://admin.startsell.biz/api/';
+  static String _urlBitrix = 'https://greensofa.bitrix24.ua/rest/1/6u40o9w4ficrhka0/';
+
   static Map<String, String> _contentType = {"Content-Type": "application/json"};
   //Api.internal();
 
@@ -146,7 +148,35 @@ class Api {
     }
   }
 
+  static Future<List<dynamic>> fetchWorkTime(dynamic dateFrom, dynamic dateTo,{String sort = 'date_work'}) async {
+    String filter = '&dateFrom='+dateFrom+'&dateTo='+dateTo;
+    String path = 'accounting/employee/visits?sort=name';
+
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    var url =_url+path+'&auth_token='+token+filter;
+    print('Api: fetchWorkTime========================');
+    print(url);
+    print(filter);
+
+    final response = await http.get(
+        url,
+        headers: { "Content-Type" : "application/jsonn"}
+    );
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON.
+      return json.decode(response.body)['data'];
+    } else {
+      // If that response was not OK, throw an error.
+      throw Exception('Failed to load post');
+    }
+  }
+
   static Future<dynamic> updateOrderStatus(dynamic recordId, Map<String,String> group) async {
+
+     //updateOrderStatusBitrix(recordId, group);
     String path = 'accounting/orders/';
     String token;
     await getToken().then((value) {
@@ -173,6 +203,87 @@ class Api {
     }
   }
 
+  static Future<dynamic> updateOrderStatusBitrix(dynamic recordId, Map<String,String> group) async {
+    print(group);
+    Map<String,String> status = {
+      '1' : '567',
+      '4' : '565',
+      '' : '565',
+      '2' : '565',
+      '3' : '565',
+      '5' : '565'
+    };
+    print(status[group['W']]);
+    String path = 'lists.element.get';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    Map<String,dynamic> groupGetList = {};
+    Map<String,dynamic> groupSetList = {};
+    Map<String,String> filter = {};
+    filter['=PROPERTY_497'] = "12071";
+    groupGetList['IBLOCK_TYPE_ID'] = "lists_socnet";
+    groupGetList['IBLOCK_ID'] = "81";
+    groupGetList['SOCNET_GROUP_ID'] = "3";
+    groupGetList['FILTER'] = filter;
+
+
+    var url =_urlBitrix + path;
+    //+ recordId.toString()+'?auth_token='+token;
+    //print(jsonEncode(groupGetList));
+    //print(url);
+
+    final responseGetList = await http.post(
+      url,
+      headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+      body: jsonEncode(groupGetList),
+    );
+    //print(responseGetList.body);
+    if (responseGetList.statusCode == 200) {
+      Map<String,dynamic> resultList = {};
+      resultList = json.decode(responseGetList.body);
+      groupSetList = resultList['result'][0];
+      groupSetList['PROPERTY_1773'] = status[group['W']];
+
+      groupGetList = {};
+      groupGetList['IBLOCK_TYPE_ID'] = "lists_socnet";
+      groupGetList['IBLOCK_ID'] = "81";
+      groupGetList['SOCNET_GROUP_ID'] = "3";
+      groupGetList['ELEMENT_ID'] = groupSetList['ID'];
+      groupGetList['FIELDS'] = groupSetList;
+
+      print(groupGetList);
+
+      url =_urlBitrix + 'lists.element.update';
+      //print(groupSetList);
+
+
+      final response = await http.post(
+        url,
+        headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+        body: jsonEncode(groupGetList),
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        print(json.decode(response.body));
+        return true;
+      } else {
+        //throw Exception('Failed to load bitrix');
+        print('Failed to load bitrix');
+        print(json.decode(response.body));
+        return false;
+
+      }
+
+    } else {
+      print(json.decode(responseGetList.body));
+      return false;
+    }
+
+
+  }
+
   static Future<dynamic> updateAll(Map<String,dynamic> group) async {
     String path = 'accounting/orders/update-all';
     String token;
@@ -181,6 +292,60 @@ class Api {
     });
 
     var url =_url + path+'?auth_token='+token;
+    print(jsonEncode(group));
+    print(url);
+
+    final response = await http.put(
+      url,
+      headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+      body: jsonEncode(group),
+    );
+    if (response.statusCode == 200) {
+      print(json.decode(response.body));
+      return true;
+    } else {
+      print(json.decode(response.body));
+      return false;
+
+      throw Exception('Failed to load post');
+    }
+  }
+  static Future<dynamic> updateAllWorkTime(Map<String,dynamic> group) async {
+    String path = 'accounting/employee-time-work/update-all';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    //_url = 'http://admin.startsellshop.local/api/';
+    var url =_url + path+'?auth_token='+token;
+    print(jsonEncode(group));
+    print(url);
+
+    final response = await http.put(
+      url,
+      headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+      body: jsonEncode(group),
+    );
+    if (response.statusCode == 200) {
+      print(json.decode(response.body));
+      return true;
+    } else {
+      print(json.decode(response.body));
+      return false;
+
+      throw Exception('Failed to load post');
+    }
+  }
+  static Future<dynamic> updateWorkTime(dynamic recordId, Map<String,dynamic> group) async {
+
+    //updateOrderStatusBitrix(recordId, group);
+    String path = 'accounting/employee-time-works/';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+
+    var url =_url + path+ recordId.toString()+'?auth_token='+token;
     print(jsonEncode(group));
     print(url);
 

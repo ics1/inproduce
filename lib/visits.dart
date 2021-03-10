@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:decimal/decimal.dart';
 import 'details.dart';
 import 'api/api.dart';
 import 'package:provider/provider.dart';
@@ -7,30 +8,30 @@ import 'app.dart';
 import 'components/input_date_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
-import 'package:decimal/decimal.dart';
 
-class OrdersAllPage extends StatefulWidget {
+class VisitsPage extends StatefulWidget {
   dynamic post = null;
   //dynamic filter;
   dynamic dropdownValue;
-  OrdersAllPage({Key key}) : super(key: key);
+  VisitsPage({Key key}) : super(key: key);
   @override
-  _OrdersAllPageState createState() => _OrdersAllPageState();
+  _VisitsPageState createState() => _VisitsPageState();
 
 }
 
-class _OrdersAllPageState extends State<OrdersAllPage> {
+class _VisitsPageState extends State<VisitsPage> {
   List <dynamic> _range = [[0,6], [0,5], [0,4], [0,3], [0,2], [0,7], [0,7]];
   List<DateTime> _date = [new DateTime.now().add(Duration(days: 1)), new DateTime.now().add(Duration(days: 7))];
   static DateTime _now = new DateTime.now();
   int _weekday = _now.weekday;
-  DateFormat dateFormat = new DateFormat('dd.MM.yy');
+  DateFormat dateFormat = new DateFormat('yyyy-MM-dd');
+  DateFormat dateFormatFilter = new DateFormat('dd.MM.yy');
+
+  DateFormat minuteFormat = new DateFormat('mm');
   String columnDate = 'AE';
-  String columnFio = 'BV';
+  String columnFio = 'AP';
   String _dateRangeText;
   DateTime _dateShvPoshivFilter;
-  DateTime _dateShvKroiFilter;
-
   int userType;
   String userFio;
 
@@ -38,13 +39,16 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   Map <String, dynamic> filter = {};
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
-  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина','Меднова'];
-  List <String> status = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен','Брак', 'Выполнен'];
-  List <String> statusKr = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Брак','Выполнен'];
-  List <String> statusNastil = ['Нет','Да'];
+
+  //List <String> employeeShv= ['','Ракицкий','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Коцюк', 'Салыга', 'Резерв'];
+  List <String> employeeShv= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор', 'Резерв'];
+  List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
+  List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
+  List <String> statusNastil = ['','Да'];
+  List <String> statusWork = ['Начало рабочего дня','Конец рабочего дня'];
 
 
-  List <String> statusKeys = ['','5', '4', '2', '3', '6','1'];
+  List <String> statusKeys = ['','5', '4', '2', '3', '1'];
 
   FocusNode myFocusNode;
   TextEditingController editingController = TextEditingController();
@@ -57,7 +61,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   List names = new List(); // names we get from API
   List filteredNames = new List(); // names filtered by search text
   Icon _searchIcon = new Icon(Icons.search);
-  Widget _appBarTitle = Text('Заказы');
+  Widget _appBarTitle = Text('Посещения');
 
   List<dynamic> listFilter = [];
 
@@ -89,7 +93,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
           if (userType == 50 || userType == 60) {
             filter[columnFio] = userFio;
           }
-          widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
+          widget.post = Api.fetchWorkTime(dateFormat.format(_date[0]),  dateFormat.format(_date[0]));;
         });
       }
       if (_filter.text.length > 3) {
@@ -146,12 +150,12 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       }
     });
 
-    print('initstate ordersAll=');
+    print('initstate workTime=');
   }
 
   setType(value) {
     userType = value;
-    print('2=');
+    print('1=');
     print(userType);
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
@@ -162,15 +166,12 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       columnFio = 'BV';
       filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
       getUserFio().then((erg) => setFilterFio(erg));
-    } else if (userType == 50) {
-      columnFio = 'BO';
-      filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
-      getUserFio().then((erg) => setFilterFio(erg));
     } else {
 
       setState(() {
+        filter['date_work'] = dateFormat.format(_date[0]);
         filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
-        widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
+        widget.post = Api.fetchWorkTime(dateFormat.format(_date[0]),  dateFormat.format(_date[0]));
       });
     }
 
@@ -180,7 +181,6 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   setFilterFio(value) {
     userFio = value;
-    print(userFio);
     setState(() {
       filter[columnFio] = value;
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
@@ -199,73 +199,76 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     if (stateStatus.length == 0) {
       return false;
     }
-    /*if (stateStatus['employeeShv'] == null) {
+    if (stateStatus['statusWork'] == null) {
       return false;
-    }*/
+    }
     /*if (stateStatus['statusShv'] == null) {
       return false;
     }*/
     return true;
   }
 
+
+
+
+
   void _setSelectedBoxBtnApplyPress() {
 
     if (_selectedBoxBtnApplyValidateData()) {
-      int index = status.indexOf(stateStatus['statusShv']);
+      //int index = status.indexOf(stateStatus['statusShv']);
       String date = _inputDateDropdown.valueText;
 
       Map<String, dynamic> result = {'fields': {}, 'ids':{}};
       print('1=');
-      print(stateStatus['statusShv']);
-      result['fields'] = {};
-      if (stateStatus['statusShv']  != '' && stateStatus['statusShv']  != null) {
-        result['fields'] = {
-          'BO': stateStatus['employeeShv'],
-          'BP': statusKeys[index],
-          'BQ': date,
-          'BR': '',
-          'BS': '',
-          'BT': '',
-          'BU': ''
-        };
-      }
-      int indexKr = statusKr.indexOf(stateStatus['statusKr']);
-      print('2=');
-      print(indexKr);
-      if (statusKeys[indexKr] != '') {
-        result['fields']['BV'] = stateStatus['employeeShv'];
-        result['fields']['BW'] = statusKeys[indexKr];
-        result['fields']['BX'] = date;
-        result['fields']['BY'] = statusNastil.indexOf(stateStatus['statusNastil']);
-      }
-      result['ids']  = _stateSelected;
-      Provider.of<IsLoading>(context, listen: false).setState(true);
-      Api.updateAll(result).then((value){
-        if (value == true) {
-          key.currentState.showSnackBar(new SnackBar(
-            //backgroundColor: Colors.green,
-            content: new Text("Изменения сохранены!"),
-          ));
-          Provider.of<IsLoading>(context, listen: false).setState(false);
-          //_dessertsDataSource.unSelectedAll();
-          setState(() {
-            widget.post = Api.fetchOrdersAll(filter);
-            stateValues.clear();
-            _stateSelected.clear();
-          });
 
-        } else {
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text("Ошибка"),
-                content: Text("Данные не сохранены!"),
-              )
-          );
-        }
-        Provider.of<IsLoading>(context, listen: false).setState(false);
-        return value;
-      });
+
+      if (stateStatus['statusWork']  == 'Начало рабочего дня') {
+        result['fields']['int_start'] = stateStatus['int_start'];
+        if (stateStatus['int_start'] == null)
+          result['fields']['int_start'] = '0.00';
+      }
+      if (stateStatus['statusWork']  == 'Конец рабочего дня') {
+        result['fields']['int_end'] = stateStatus['int_start'];
+        if (stateStatus['int_start'] == null)
+          result['fields']['int_start'] = '0.00';
+      }
+
+      result['ids']  = _stateSelected;
+      result['date_work']  = date;//dateFormatFilter.parse(date);
+
+      //for (var id in _stateSelected) {
+      print(date);
+        Api.updateAllWorkTime(result).then((value) {
+
+          if (value == true) {
+            key.currentState.showSnackBar(new SnackBar(
+              //backgroundColor: Colors.green,
+              content: new Text("Изменения сохранены!"),
+            ));
+            Provider.of<IsLoading>(context, listen: false).setState(false);
+            //_dessertsDataSource.unSelectedAll();
+            setState(() {
+              widget.post = Api.fetchWorkTime(filter['date_work'], filter['date_work']);
+              stateValues.clear();
+              _stateSelected.clear();
+            });
+
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Ошибка"),
+                  content: Text("Данные не сохранены!"),
+                )
+            );
+          }
+          Provider.of<IsLoading>(context, listen: false).setState(false);
+          return value;
+        });
+        Provider.of<IsLoading>(context, listen: false).setState(true);
+      //}
+
+
 
     } else {
       _showError();
@@ -276,22 +279,23 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     int index = status.indexOf(stateStatus['statusShvFilter']);
 
     if (stateStatus['statusShvFilter'] !='' && stateStatus['statusShvFilter']!=null) {
-      filter['BP'] = statusKeys[index];
+      filter['AQ'] = statusKeys[index];
     } else {
-      filter.remove('BP');
+      filter.remove('AQ');
     }
     if (stateStatus['emploeeyShvFilter']!='' && stateStatus['emploeeyShvFilter']!=null) {
-      filter['BO'] = stateStatus['emploeeyShvFilter'];
+      filter['AP'] = stateStatus['emploeeyShvFilter'];
     } else {
-      print('remove BO');
-      filter.remove('BO');
+      print('remove AP');
+      filter.remove('AP');
     }
+
     if (stateStatus['statusKrFilter']!='' && stateStatus['statusKrFilter']!=null) {
       index = statusKr.indexOf(stateStatus['statusKrFilter']);
-      filter['BW'] = index;
+      filter['AV'] = index;
     } else {
-      print('remove BW');
-      filter.remove('BW');
+      print('remove AV');
+      filter.remove('AV');
     }
 
     if (stateStatus['employeeShvFilter']!='' && stateStatus['employeeShvFilter']!=null) {
@@ -301,40 +305,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       filter.remove('BO');
     }
 
-    if (stateStatus['employeeKroiFilter']!='' && stateStatus['employeeKroiFilter']!=null) {
-      filter['BV'] = stateStatus['employeeKroiFilter'];
-    } else {
-      print('remove BV');
-      filter.remove('Bv');
-    }
 
-    if (stateStatus['statusNastilFilter']!='' && stateStatus['statusNastilFilter']!=null) {
-      filter['BY'] = statusNastil.indexOf(stateStatus['statusNastilFilter']);
-    } else {
-      print('remove BY');
-      filter.remove('BY');
-    }
-    print(_dateShvPoshivFilter);
-    print(_dateShvKroiFilter);
 
-    if (_dateShvPoshivFilter != null || _dateShvKroiFilter != null) {
-      if (_dateShvKroiFilter != null) {
-        filter['BX'] = dateFormat.format(_dateShvKroiFilter);
-      }
-      if (_dateShvPoshivFilter != null) {
-        filter['BQ'] = dateFormat.format(_dateShvPoshivFilter);
-      }
-      filter.remove(columnDate);
-    } else {
-      print('remove BQ or BX');
-      filter.remove('BQ');
-      filter.remove('BX');
 
-      filter[columnDate] = {'>=': dateFormat.format(_date[0]), '<=': dateFormat.format(_date[1])};
-    }
-    if (userType == 50 || userType == 60) {
-      filter[columnFio] = userFio;
-    }
+
     setState(() {
       widget.post = Api.fetchOrdersAll(filter, sort : columnDate);
     });
@@ -346,7 +320,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
         initialFirstDate: _date[0],
         initialLastDate: _date[1],
         firstDate: new DateTime(2015),
-        lastDate: new DateTime(2030)
+        lastDate: new DateTime(2020)
     );
     if (picked != null && picked.length == 2) {
       setState(() {
@@ -386,41 +360,15 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   }
 
-  void _setFilterDialogIconDateKroiPress() async {
-    picked = await showDatePicker(
-        context: context,
-        //locale:  Locale('ru', 'RU'),
-        initialDate: (_dateShvKroiFilter) ?? new DateTime.now(),
-        firstDate: new DateTime(1918),
-        lastDate: new DateTime(2030)
-    );
-
-    if (picked != null) {
-      setState(() {
-
-        _dateShvKroiFilter = picked;
-        _textKroiFieldController.text = dateFormat.format(_dateShvKroiFilter);
-      });
-
-    }
-  }
-
-  void _setFilterDialogIconDateKroiClearPress() async {
-    setState(() {
-      _dateShvKroiFilter = null;
-      _textKroiFieldController.text = '___.___.___';
-    });
-
-  }
-
   Widget _getGridCardIconStatus(value) {
-    if (value == '1') {
-      return Icon(Icons.check_box, color: Colors.green, size: 15.0);
-    }
-    if (value == '2') {
+
+    if (Decimal.parse(value.toString()) > Decimal.parse('8')) {
       return Icon(Icons.check_box, color: Colors.yellow, size: 15.0);
     }
-    if (value == '3') {
+    if (Decimal.parse(value.toString()) > Decimal.parse('0')) {
+      return Icon(Icons.check_box, color: Colors.green, size: 15.0);
+    }
+    if (value == '0.00') {
       return Icon(Icons.check_box, color: Colors.red, size: 15.0);
     }
     return  Icon(Icons.check_box_outline_blank, color: Colors.grey, size: 15.0,);
@@ -428,18 +376,6 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   void _getGridCardNavigateDetails(BuildContext context, product) async {
 
-//    final result = await Navigator.push(
-//      _ctx,
-//      MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
-//    );
-//
-//    if (result['changed']) {
-//      setState(() {
-//        //widget.post = Api.fetchOrders(null);
-//      });
-//    }
-
-    product['user_type'] = userType;
     final result = await Navigator.push(
       _ctx,
       MaterialPageRoute(builder: (context) => DetailsPage(params: product)),
@@ -447,9 +383,8 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
     if (result['changed']) {
       setState(() {
-        widget.post = Api.fetchOrdersAll(filter);
+        //widget.post = Api.fetchOrders(null);
       });
-
     }
   }
 
@@ -463,7 +398,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     final ThemeData theme = Theme.of(context);
     final NumberFormat formatter = NumberFormat.simpleCurrency(
         locale: Localizations.localeOf(context).toString());
-    iconStatus = _getGridCardIconStatus(product['W']);
+    iconStatus = _getGridCardIconStatus(product['visits'][filter['date_work']]['int_start']);
 
     return ListTile(
       title: Row(
@@ -479,7 +414,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   //mainAxisSize: MainAxisSize.max,
                   children: [
-                    Text(product['A'], style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),),
+                    Text(product['index'].toString(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),),
                   ],
                 ),
               )
@@ -492,41 +427,35 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(product['I'], style: TextStyle(fontSize: 14, color: Colors.black),),
-                //Text("клиент: "+product['F'], style: TextStyle(fontSize: 12, color: Colors.blue)),
-                //Text("исп./обивка: "+product['Z'].toString()+" ("+product['W'].toString()+') ('+product['AE'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                //Text("исп./столярка: "+product['AZ'].toString()+" ("+product['BA'].toString()+') ('+product['BB'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
-
+                Text(product['employee_name'], style: TextStyle(fontSize: 14, color: Colors.black),),
                 Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("крой"+((product['BY'] == '1') ? "/настил:" : ":"), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['BV'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['BX'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      _getGridCardIconStatus(product['BW']),
-
-                ]),
+                      Expanded(flex:3, child:Text("время начало", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['visits'][filter['date_work']]['int_start'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      //Expanded(flex:2,child:Text(product['AE'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      _getGridCardIconStatus(product['visits'][filter['date_work']]['int_start']),
+                    ]),
                 Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("пошив:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['BO'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['BQ'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      _getGridCardIconStatus(product['BP']),
+                      Expanded(flex:3, child:Text("время конец", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['visits'][filter['date_work']]['int_end'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      //Expanded(flex:2,child:Text(product['AW'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      //_getGridCardIconStatus(product['AV']),
 
-                ]),
-                Text("материал: "+product['L'].toString()+" "+product['M'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-
-                //Text("исп./швейка: "+product['BO'].toString()+" ("+product['BP'].toString()+') ('+product['BQ'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                //Text("исп./крой: "+product['BV'].toString()+" ("+product['BW'].toString()+') ('+product['BX'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                Text("дата клиента: "+product['D'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("дата производства:: "+product['AE'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("коэф об: "+product['AA'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("коэф вр/шв/пош: "+product['CH'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-                Text("коэф вр/шв/кр: "+product['CI'].toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
-
+                    ]),
+                Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:[
+                      Expanded(flex:3, child:Text("id", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['visits'][filter['date_work']]['id'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      //Expanded(flex:2,child:Text(product['AR'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      //_getGridCardIconStatus(product['AQ']),
+                    ]),
               ],
             ),
           ),
@@ -534,14 +463,14 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
             width: 80,
             child: CheckboxListTile(
               //title: const Text('Animate Slowly'),
-              value: (stateValues[product['A']]) ?? false,//timeDilation != 1.0,
+              value: (stateValues[product['employee_id']]) ?? false,//timeDilation != 1.0,
               onChanged: (bool value) {
                 setState(() {
-                  stateValues[product['A']] = value;
-                  if (stateValues[product['A']]) {
-                    _stateSelected.add(product['A']);
+                  stateValues[product['employee_id']] = value;
+                  if (stateValues[product['employee_id']]) {
+                    _stateSelected.add(product['employee_id']);
                   } else {
-                    _stateSelected.remove(product['A']);
+                    _stateSelected.remove(product['employee_id']);
                   }
 
                 });
@@ -557,107 +486,15 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     );
   }
 
-  dynamic _getArray(data) {
-    List listExpand = [];
-
-    int index = 0;
-    Decimal CI, CH, AA;
-    Decimal coefPoshivSumTotal = Decimal.parse('0');
-    Decimal coefKroiSumTotal = Decimal.parse('0');
-    Decimal coefSumTotal = Decimal.parse('0');
-
-
-    dynamic item;
-    Map <String, dynamic> dataDate = {};
-    String currentDate;
-    //print(widget.filter);
-    for (var i = 0; i < data.length; i++) {
-      //print(data[i]['AE']);
-      item = data[i];
-      currentDate = item[columnDate];
-      if (currentDate == null || currentDate=='') {
-        continue;
-      }
-      //new
-      if (dataDate[currentDate] == null) {
-        dataDate[currentDate] = {
-          'coefSum' : Decimal.parse('0'),
-          'coefPoshivSum' : Decimal.parse('0'),
-          'coefKroiSum' : Decimal.parse('0'),
-          'headerValue' : currentDate
-        };
-      }
-
-      if (item['AA'] == '' || item['AA'] == null) {
-        item['AA'] = '0,0';
-      }
-      if (item['CH'] == '' || item['CH'] == null) {
-        item['CH'] = '0,0';
-      }
-      if (item['CI'] == '' || item['CI'] == null) {
-        item['CI'] = '0,0';
-      }
-
-      AA = Decimal.parse(item['AA'].replaceAll(',','.'));
-      CI = Decimal.parse(item['CI'].replaceAll(',','.'));
-      CH = Decimal.parse(item['CH'].replaceAll(',','.'));
-
-
-      dataDate[currentDate]['coefSum'] += Decimal.parse(AA.toStringAsFixed(2));
-      dataDate[currentDate]['coefPoshivSum'] += Decimal.parse(CH.toStringAsFixed(2));
-      dataDate[currentDate]['coefKroiSum'] += Decimal.parse(CI.toStringAsFixed(2));
-
-      //print(currentDate);
-      //print(item[columnStatus]);
-      //print(dataDate[currentDate]['coefSum'] );
-      coefSumTotal = coefSumTotal + Decimal.parse(AA.toStringAsFixed(2));
-      coefPoshivSumTotal = coefPoshivSumTotal + Decimal.parse(CH.toStringAsFixed(2));
-      coefKroiSumTotal = coefKroiSumTotal + Decimal.parse(CI.toStringAsFixed(2));
-
-
-      index++;
-    }
-
-    listExpand.sort((a, b) => DateFormat('dd.MM.yy').parse(a['headerValue']).compareTo(DateFormat('dd.MM.yy').parse(b['headerValue'])));
-    return {'listExpand': listExpand,  'coefSum': coefSumTotal, 'coefPoshivSum': coefPoshivSumTotal, 'coefKroiSum': coefKroiSumTotal};
-  }
-
-  Widget  _getTotal() {
-
-    return FutureBuilder<List<dynamic>>(
-      future: widget.post,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          dynamic totalArray = _getArray(snapshot.data);
-          //String pribil = '';
-          //if (userType == 0) {
-          //  pribil = totalArray['pribil'].toStringAsFixed(1);
-          //}
-          return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Итого: '),
-                Text('шв п:'+totalArray['coefPoshivSum'].toStringAsFixed(1)+'     шв кр:'+totalArray['coefKroiSum'].toStringAsFixed(1)+'      об:'+totalArray['coefSum'].toStringAsFixed(1)),
-              ]
-          );
-
-        }
-        // By default, show a loading spinner.
-        return Center();//Center( child:CircularProgressIndicator());
-      },
-    );
-  }
-
   TextEditingController _textFieldController = new TextEditingController();
-  TextEditingController _textKroiFieldController = new TextEditingController();
 
+  TextEditingController _textField2Controller = new TextEditingController();
   TextEditingController _textFieldRangeController = new TextEditingController();
 
   Widget _getIconFilterDialog() {
     return AlertDialog(
         title: Text("Фильтр"),
-        content: SingleChildScrollView( // won't be scrollable
-          child: Column(
+        content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
 
@@ -693,10 +530,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
               _getDropDownState('Статус пошив:', 'statusShvFilter', status,[0,10,51, 50]),
               _getDropDownState('Исполн-ль крой:', 'employeeKroiFilter', employeeShv,[0,10,51]),
               _getDropDownState('Статус крой:', 'statusKrFilter', statusKr, [0,10,51,50,60]),
-              //_getDropDownState('Настил:', 'statusNastilFilter', statusNastil, [0,10,51,50,60]),
+              _getDropDownState('Настил:', 'statusNastilFilter', statusNastil, [0,10,51,50,60]),
               //_dropDownDate(DateFormat('dd.MM.yy').format(DateTime.now())),
               _getDropDownDateState(),
-              _getDropDownDateKroiState(),
 
               FlatButton(
                 color: Colors.blue,
@@ -710,7 +546,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                 ),
               ),
             ]
-        ))
+        )
     );
   }
 
@@ -754,7 +590,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       ),
       onPressed: () {
         setState(() {
-          widget.post = Api.fetchOrdersAll(filter);
+          widget.post = Api.fetchWorkTime(filter['date_work'], filter['date_work']);
         });
       },
     );
@@ -786,10 +622,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
             if (value['filter'] == "AE") {
               return null;
             }
-            if (value['filter'] == "BQ" || value['filter'] == "BX") {
+            if (value['filter'] == "BQ") {
               return null;
             }
-
             setState(() {
               listFilter.removeWhere((entry) {
                 print('1=');
@@ -815,10 +650,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     filter.forEach((i, value) {
       print(i);
       print(value);
-      if (i == columnDate) {
-        filterInfo =  DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['>=']))+'-'+ DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['<=']));
-        listFilter.add({'value' : filterInfo, 'filter' : columnDate});
-      }
+//      if (i == columnDate) {
+//        filterInfo =  DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['>=']))+'-'+ DateFormat('dd.mm').format(DateFormat('dd.mm.yy').parse(value['<=']));
+//        listFilter.add({'value' : filterInfo, 'filter' : columnDate});
+//      }
       if (i == 'BP') {
         int indexStatus = statusKeys.indexOf(value);
         filterInfo = 'Пошив:'+ status[indexStatus];
@@ -831,19 +666,13 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       }
       if (i == 'BO') {
         //int indexStatus = statusKr.indexOf(value);
-        filterInfo = 'Пошив:'+value;
+        filterInfo = 'Дата пошива:'+value;
         listFilter.add({'value' : filterInfo, 'filter' : 'BO'});
       }
-      if (i == 'BQ' || i == 'BX') {
-        if (i == 'BX' && i!= columnDate) {
-          //int indexStatus = statusKr.indexOf(value);
-          filterInfo = 'Дата крой:'+value;
-          listFilter.add({'value' : filterInfo, 'filter' : 'BX'});
-        } else {
-          //int indexStatus = statusKr.indexOf(value);
-          filterInfo = 'Дата пошив:'+value;
-          listFilter.add({'value': filterInfo, 'filter': 'BQ'});
-        }
+      if (i == 'BQ') {
+        //int indexStatus = statusKr.indexOf(value);
+        filterInfo = value;
+        listFilter.add({'value' : filterInfo, 'filter' : 'BQ'});
       }
 
       if (i == 'BV') {
@@ -857,7 +686,11 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
         listFilter.add({'value' : filterInfo, 'filter' : 'BY'});
       }
 
-
+      if (i == 'BX' && i!= columnDate) {
+        //int indexStatus = statusKr.indexOf(value);
+        filterInfo = 'Дата крой:'+value;
+        listFilter.add({'value' : filterInfo, 'filter' : 'BX'});
+      }
 
     });
 
@@ -870,8 +703,33 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
             children: _getFilterInfoChip.toList()
         ));
   }
+  String  _time;
+  int _hour, _minute;
+  TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
+  double _height;
+  double _width;
+
+  Future<Null> _selectTime(BuildContext context) async {
+    final TimeOfDay picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+    );
+    if (picked != null)
+      setState(() {
+        selectedTime = picked;
+        _hour = selectedTime.hour;
+        _minute = selectedTime.minute;
+        _time = _hour.toString()+':'+minuteFormat.format(DateTime(2020, 01, 01, _hour, _minute));
+        _textFieldController.text = _time;
+
+        stateStatus['int_start'] = _time.replaceAll(':','.');
+      });
+
+  }
 
   Widget _getSelectedBoxRow() {
+
+    _textFieldController.text = (stateStatus['int_start'] !=null) ? stateStatus['int_start'] : '0:00';
     return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -888,16 +746,43 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                       content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            _dropDownDate(dateFormatFilter.format(DateTime.now())),
+                            _getDropDownState('Время', 'statusWork', statusWork, [0,10,51,50,60]),
 
-                            _getDropDownState('Исполнитель', 'employeeShv', employeeShv, [0,10,51,50,60]),
-                            _getDropDownState('Статус пошив:', 'statusShv', status, [0,10,51,50]),
-                            _getDropDownState('Статус крой:', 'statusKr', statusKr, [0,10,51,50,60]),
-                            _getDropDownState('Настил:', 'statusNastil', statusNastil, [0,10,51,50,60]),
-                            _dropDownDate(dateFormat.format(DateTime.now())),
+                            InkWell(
+                              onTap: () {
+                                _selectTime(context);
+                              },
+                              child: Container(
+                                //margin: EdgeInsets.only(top: 30),
+                                //width: 100,
+                                //height: 20,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(color: Colors.grey[200]),
+                                child: TextFormField(
+                                  //style: TextStyle(fontSize: 40),
+                                  //initialValue: '0:00',
+                                  textAlign: TextAlign.center,
+                                  onSaved: (String val) {
+                                    stateStatus['int_start'] = val;
+                                  },
+                                  enabled: false,
+                                  keyboardType: TextInputType.text,
+                                  controller: _textFieldController,
+                                  decoration: InputDecoration(
+                                      disabledBorder:
+                                      UnderlineInputBorder(borderSide: BorderSide.none),
+                                      // labelText: 'Time',
+                                      contentPadding: EdgeInsets.all(5)),
+                                ),
+                              ),
+                            ),
+
+
+
                             Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children:[
-
                                   RaisedButton(
                                     onPressed: () async {
                                       Navigator.of(context).pop();
@@ -918,8 +803,6 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                                   ),
                                 ]
                             ),
-
-
                           ]
                       )
                   )
@@ -932,9 +815,9 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
 
   List<Widget> _getAppBarActions() {
     return <Widget>[
-      _getActionsIconSearch(),
+      //_getActionsIconSearch(),
       _getActionsIconRefresh(),
-      _getActionsIconFilter(),
+      //_getActionsIconFilter(),
     ];
   }
 
@@ -1017,54 +900,71 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     );
   }
 
+  _buildExpandableContent(vehicle) {
+    List<Widget> columnContent = [];
+
+    for (dynamic content in vehicle) {
+
+      columnContent.add(
+        Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(width: 1.0, color: Color(0xFFFFDFDFDF)),
+              ),
+            ),
+            child: _getListOrdersGridCards(content)
+        ),
+      );
+    }
+
+    return columnContent;
+  }
+
+  _buildExpandableEmployees(vehicle) {
+    List<Widget> columnContent = [];
+
+    for (dynamic content in vehicle) {
+
+      columnContent.add(
+          ExpansionTile(
+            title: Text(content['employee_name']),
+            children: <Widget>[
+              new Column(
+                  children: _buildExpandableContent(content['visits'])
+              ),
+            ],
+          )
+      );
+    }
+
+    return columnContent;
+  }
+
   Widget _getBuildListOrders() {
+    List<dynamic> columnContent = [];
     return FutureBuilder<List<dynamic>>(
       future: widget.post,
       builder: (context, snapshot) {
+
         if (snapshot.hasData) {
-          String dateGroup;
+
           return ListView.builder(
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(0.0),
               shrinkWrap: true,
               itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
+                  List<Widget> widgets = _buildExpandableContent(snapshot.data[index]['employees']);
 
-                if (dateGroup != snapshot.data[index][columnDate]) {
-                  dateGroup = snapshot.data[index][columnDate];
-                  return Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Container(
-                          padding: const EdgeInsets.only(left: 10.0, bottom: 12.0, top: 12.0, right: 10.0),
-                          color: Colors.black12,
-                          child: Text(snapshot.data[index][columnDate]),
-                        ),
-                        Container(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(width: 1.0, color: Color(0xFFFFDFDFDF)),
-                              ),
-                            ),
-                            child: _getListOrdersGridCards(snapshot.data[index])
-                        ),
-                      ]
-
-                  );
-                }
-                return Column(
-                    children: [
-                      Container(
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(width: 1.0, color: Color(0xFFFFDFDFDF)),
-                            ),
-                          ),
-                          child: _getListOrdersGridCards(snapshot.data[index])
+                  return new ExpansionTile(
+                    title: Text(snapshot.data[index]['department_name']),
+                    children: <Widget>[
+                      new Column(
+                        children: widgets
                       ),
-                    ]
-                );
+                    ],
+                  );
+
               });
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
@@ -1090,7 +990,6 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     //}
     return listWidgets;
   }
-
   Widget build(BuildContext context) {
     _ctx = context;
     //Provider.of<IsLoading>(context, listen: false).setState(true);
@@ -1103,14 +1002,6 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       ),
 
       drawer: _getBuildDrawer(),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          height: 50.0,
-          padding: new EdgeInsets.only(left: 25.0, bottom: 5.0, top: 5.0, right: 25.0),
-          child: _getTotal(),
-        ),
-      ),
-
       resizeToAvoidBottomInset: false,
       //resizeToAvoidBottomPadding: true,
     );
@@ -1146,53 +1037,10 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
       return Center();
     }
     return Column(
-      children: [
-        Row(
-            children:[
-              Text('Дата пошива:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
-            ]
-        ),
-        Row(
-            children:[
-              Container(
-                  width: 60,
-                  child: TextField(
-                    controller: _textFieldController,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
-                    decoration: InputDecoration(hintText: "___.___.___"),
-                    enabled: false,
-                  )
-              ),
-              //_widgetDatePohiv,
-              IconButton(
-                  iconSize: 22.0,
-                  icon: Icon(
-                    Icons.calendar_today,
-                  ),
-                  onPressed: _setFilterDialogIconDatePoshivPress
-              ),
-              IconButton(
-                  iconSize: 22.0,
-                  icon: Icon(
-                    Icons.close,
-                  ),
-                  onPressed: _setFilterDialogIconDateClearPress
-              ),
-            ]
-        ),
-      ]
-    );
-  }
-
-  Widget _getDropDownDateKroiState() {
-    if (userType == 50 || userType == 60) {
-      return Center();
-    }
-    return Column(
         children: [
           Row(
               children:[
-                Text('Дата кроя:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+                Text('Дата пошива:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
               ]
           ),
           Row(
@@ -1200,7 +1048,7 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                 Container(
                     width: 60,
                     child: TextField(
-                      controller: _textKroiFieldController,
+                      controller: _textFieldController,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
                       decoration: InputDecoration(hintText: "___.___.___"),
                       enabled: false,
@@ -1212,14 +1060,14 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
                     icon: Icon(
                       Icons.calendar_today,
                     ),
-                    onPressed: _setFilterDialogIconDateKroiPress
+                    onPressed: _setFilterDialogIconDatePoshivPress
                 ),
                 IconButton(
                     iconSize: 22.0,
                     icon: Icon(
                       Icons.close,
                     ),
-                    onPressed: _setFilterDialogIconDateKroiClearPress
+                    onPressed: _setFilterDialogIconDateClearPress
                 ),
               ]
           ),
@@ -1241,30 +1089,30 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
               ]
           ),
           Row(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              new DropdownButton<String>(
-                //hint: Text(title),
-                value: stateStatus[stateName],
-                items: employeeSt.map<DropdownMenuItem<String>>((String value) {
-                  var i = employeeSt.indexOf(value);
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal, color: Colors.black)),
-                  );
-                }).toList(),
-                onChanged: (String newValue) {
-                  setState(() {
-                    stateStatus[stateName] = newValue;
-                  });
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                new DropdownButton<String>(
+                  //hint: Text(title),
+                  value: stateStatus[stateName],
+                  items: employeeSt.map<DropdownMenuItem<String>>((String value) {
+                    var i = employeeSt.indexOf(value);
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal, color: Colors.black)),
+                    );
+                  }).toList(),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      stateStatus[stateName] = newValue;
+                    });
 
-                  //_changeFilter(stateName);
+                    //_changeFilter(stateName);
 
-                },
-              )
-            ]
+                  },
+                )
+              ]
           )
         ]);
       },

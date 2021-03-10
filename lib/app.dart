@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+//import 'package:inproduce/visits.dart';
 
 import 'home.dart';
 import 'login.dart';
@@ -25,6 +26,10 @@ import 'orders_paralon.dart';
 import 'table.dart';
 import 'details_table_sv.dart';
 import 'orders_stolyarka.dart';
+import 'orders_sawcut.dart';
+
+import 'visits.dart';
+
 
 class IsLoading with ChangeNotifier {
   bool value = false;
@@ -58,9 +63,11 @@ class GreenSofaApp extends StatelessWidget {
         '/orders-all':         (BuildContext context) => new OrdersAllPage(),
         '/orders-paralon':         (BuildContext context) => new OrdersParalonPage(),
         '/orders-stolyarka':         (BuildContext context) => new OrdersStolyarkaPage(),
+        '/orders-sawcut':         (BuildContext context) => new OredersSawcutPage(),
         '/orders-table':         (BuildContext context) => new DataTableDemo(),
         '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
         '/table':         (BuildContext context) => new MyApp(),
+        '/visits':         (BuildContext context) => new VisitsPage(),
         '/' :          (BuildContext context) => new LoginPage(),
       },
       localizationsDelegates: [

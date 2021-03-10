@@ -25,6 +25,7 @@ class _OrdersStolyarkaPageState extends State<OrdersStolyarkaPage> {
   static DateTime _now = new DateTime.now();
   int _weekday = _now.weekday;
   DateFormat dateFormat = new DateFormat('dd.MM.yy');
+  DateFormat dateFormatDb = new DateFormat('YY.dd.MM H:i');
   String columnDate = 'AE';
   String columnFio = 'AZ';
   String _dateRangeText;
@@ -37,7 +38,7 @@ class _OrdersStolyarkaPageState extends State<OrdersStolyarkaPage> {
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
   //List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов'];
-  List <String> employeeShv= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Чабан', 'Отрышко', 'Жарков', 'Ракицкий', 'Тютюнник', 'Скрипник'];
+  List <String> employeeShv= ['','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Чабан', 'Отрышко', 'Жарков', 'Ракицкий', 'Тютюнник', 'Скрипник', 'Жаров','Котов'];
   List <String> status = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Выполнен'];
   List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
   List <String> statusNastil = ['','Да'];
@@ -425,6 +426,16 @@ class _OrdersStolyarkaPageState extends State<OrdersStolyarkaPage> {
                 //Text("исп./обивка: "+product['Z'].toString()+" ("+product['W'].toString()+') ('+product['AE'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
                 //Text("исп./столярка: "+product['AZ'].toString()+" ("+product['BA'].toString()+') ('+product['BB'].toString()+")", style: TextStyle(fontSize: 12, color: Colors.grey)),
 
+                Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:[
+                      Expanded(flex:3, child:Text("Распил:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text("", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child: Text(product['date_sawcut'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      _getGridCardIconStatus(product['status_sawcut'].toString()),
+
+                    ]),
                 Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -136,7 +136,8 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор','Долгиер', 'Резерв'];
+  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга',
+    'Завальнюк', 'Скрипник','Ткачук', 'Чеховский','Долгиер','Гаврилашенко','Резерв'];
   List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
 
   _buildDropDown(int userType, List<String> list, stateName) {
@@ -463,6 +464,18 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(_ctx).pushReplacementNamed("/orders-table");
           },
+        ),
+        ListTile(
+          title: Text('Распил'),
+          onTap: () {
+            Navigator.of(_ctx).pushReplacementNamed("/orders-sawcut");
+          },
+        ),
+        ListTile(
+            title: Text('Посещения'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/visits");
+            }
         ),
 
 
