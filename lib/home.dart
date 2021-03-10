@@ -442,9 +442,21 @@ class _HomePageState extends State<HomePage> {
     if (userType == 10 || userType == 0) {
       return Column( children: <Widget>[
         ListTile(
+            title: Text('Обивка план'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-upholstery-plan");
+            }
+        ),
+        ListTile(
             title: Text('Швейка'),
             onTap: () {
               Navigator.of(_ctx).pushReplacementNamed("/orders-all");
+            }
+        ),
+        ListTile(
+            title: Text('Швейка план'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-sewing-plan");
             }
         ),
         ListTile(
@@ -464,6 +476,12 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(_ctx).pushReplacementNamed("/orders-table");
           },
+        ),
+        ListTile(
+            title: Text('Столярка план'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/orders-carpenter-plan");
+            }
         ),
         ListTile(
           title: Text('Распил'),

@@ -27,6 +27,9 @@ import 'table.dart';
 import 'details_table_sv.dart';
 import 'orders_stolyarka.dart';
 import 'orders_sawcut.dart';
+import 'orders_sewing_plan.dart';
+import 'orders_carpenter_plan.dart';
+import 'orders_upholstery_plan.dart';
 
 import 'visits.dart';
 
@@ -66,6 +69,10 @@ class GreenSofaApp extends StatelessWidget {
         '/orders-sawcut':         (BuildContext context) => new OredersSawcutPage(),
         '/orders-table':         (BuildContext context) => new DataTableDemo(),
         '/orders-table-shveka':   (BuildContext context) => new TableSveika(),
+        '/orders-sewing-plan':   (BuildContext context) => new OrdersSewingPlanPage(),
+        '/orders-carpenter-plan':   (BuildContext context) => new OrdersCarpenterPlanPage(),
+        '/orders-upholstery-plan':   (BuildContext context) => new OrdersUpholsteryPlanPage(),
+
         '/table':         (BuildContext context) => new MyApp(),
         '/visits':         (BuildContext context) => new VisitsPage(),
         '/' :          (BuildContext context) => new LoginPage(),
