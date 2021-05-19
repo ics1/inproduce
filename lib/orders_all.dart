@@ -38,13 +38,15 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
   Map <String, dynamic> filter = {};
   List _stateSelected = [];
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
-  List <String> employeeShv= ['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина','Меднова'];
-  List <String> status = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен','Брак', 'Выполнен'];
-  List <String> statusKr = ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Брак','Выполнен'];
+  List <String> employeeShv= [];//['','Плукчи', 'Социгашева', 'Овчарская', 'Агарунова', 'Логинов', 'Жильников', 'Мачулко', 'Плахотнюк', 'Артемкина','Кочегурна'];
+  List <String> status = [];//['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен','Брак', 'Выполнен'];
+  List <String> statusKr = [];// ['','Взят в работу, готовность завтра', 'Наряд выдан', 'Взят в работу, готовность сегодня', 'Остановлен', 'Брак','Выполнен'];
   List <String> statusNastil = ['Нет','Да'];
 
+  List<String> employees = [];
 
-  List <String> statusKeys = ['','5', '4', '2', '3', '6','1'];
+
+  List <String> statusKeys = [];// ['','5', '4', '2', '3', '6','1'];
 
   FocusNode myFocusNode;
   TextEditingController editingController = TextEditingController();
@@ -73,7 +75,29 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     _dateRangeText = dateFormat.format(_date[0])+'-'+dateFormat.format(_date[1]);
     _textFieldRangeController.text = _dateRangeText;
     //filter["BP"] = '4';
-    getUserType().then((value) => setType(value));
+    getEmployees('3').then((value){
+        getStatuses().then((valueStatus) {
+          List<String> statusKeysNew = [''];
+          status = valueStatus;
+          int i = 1;
+          valueStatus.forEach((row) {
+            if (i != (status.length)) {
+              statusKeysNew.add(i.toString());
+            }
+            i++;
+          });
+          //setState(() {
+            status = valueStatus;
+            statusKr = valueStatus;
+            statusKeys = statusKeysNew;
+            employeeShv = value;
+          //});
+          getUserType().then((value) => setType(value));
+        });
+
+
+    });
+    //getUserType().then((value) => setType(value));
 
     myFocusNode = FocusNode();
     setState(() {
@@ -1331,13 +1355,26 @@ class _OrdersAllPageState extends State<OrdersAllPage> {
     return getUserType;
   }
 
-  Future<void> logout() async{
+  getEmployees(departmentId) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String> employees = preferences.getStringList("employees_"+departmentId);
+    return employees;
+  }
+
+  getStatuses() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String> statuses = preferences.getStringList("statuses");
+    return statuses;
+  }
+
+  Future<void> logout() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.remove("auth_token");
     pref.remove("is_login");
     pref.remove("fio");
     pref.remove("type");
     pref.remove("filter");
+    pref.remove("employees_1");
   }
 }
 

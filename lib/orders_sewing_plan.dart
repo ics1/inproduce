@@ -500,9 +500,9 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("Распил:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text("", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child: Text(product['date_sawcut_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2, child:Text("Распил:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text("", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child: Text(product['date_sawcut_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
                       _getGridCardIconStatus(product['status_sawcut'].toString()),
 
                     ]),
@@ -510,9 +510,9 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("Столярка:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['AZ'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['date_carpenter_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2, child:Text("Столярка:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text(product['AZ'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['date_carpenter_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
                       _getGridCardIconStatus(product['BA']),
 
                     ]),
@@ -520,9 +520,9 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("крой"+((product['BY'] == '1') ? "/настил:" : ":"), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['BV'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['date_cut_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2, child:Text("крой"+((product['BY'] == '1') ? "/настил:" : ":"), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text(product['BV'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['date_cut_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
                       _getGridCardIconStatus(product['BW']),
 
                     ]),
@@ -530,9 +530,9 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("пошив:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['BO'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['date_sewing_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2, child:Text("пошив:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text(product['BO'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['date_sewing_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
                       _getGridCardIconStatus(product['BP']),
 
                     ]),
@@ -540,9 +540,9 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:[
-                      Expanded(flex:3, child:Text("обивка:", style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:3,child:Text(product['Z'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
-                      Expanded(flex:2,child:Text(product['date_upholstery_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2, child:Text("обивка:", style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:2,child:Text(product['Z'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
+                      Expanded(flex:3,child:Text(product['date_upholstery_plan'].toString(), style: TextStyle(fontSize: 12, color: Colors.grey))),
                       _getGridCardIconStatus(product['W']),
 
                     ]),
@@ -559,25 +559,25 @@ class _OrdersSewingPlanPageState extends State<OrdersSewingPlanPage> {
               ],
             ),
           ),
-          Container(
-            width: 80,
-            child: CheckboxListTile(
-              //title: const Text('Animate Slowly'),
-              value: (stateValues[product['A']]) ?? false,//timeDilation != 1.0,
-              onChanged: (bool value) {
-                setState(() {
-                  stateValues[product['A']] = value;
-                  if (stateValues[product['A']]) {
-                    _stateSelected.add(product['A']);
-                  } else {
-                    _stateSelected.remove(product['A']);
-                  }
-
-                });
-              },
-              //secondary: const Icon(Icons.hourglass_empty),
-            ),
-          )
+//          Container(
+//            width: 80,
+//            child: CheckboxListTile(
+//              //title: const Text('Animate Slowly'),
+//              value: (stateValues[product['A']]) ?? false,//timeDilation != 1.0,
+//              onChanged: (bool value) {
+//                setState(() {
+//                  stateValues[product['A']] = value;
+//                  if (stateValues[product['A']]) {
+//                    _stateSelected.add(product['A']);
+//                  } else {
+//                    _stateSelected.remove(product['A']);
+//                  }
+//
+//                });
+//              },
+//              //secondary: const Icon(Icons.hourglass_empty),
+//            ),
+//          )
         ],
       ),
       onTap: () {

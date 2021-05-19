@@ -32,6 +32,7 @@ import 'orders_carpenter_plan.dart';
 import 'orders_upholstery_plan.dart';
 
 import 'visits.dart';
+import 'package:inproduce/view/pages/home_page.dart';
 
 
 class IsLoading with ChangeNotifier {
@@ -72,6 +73,7 @@ class GreenSofaApp extends StatelessWidget {
         '/orders-sewing-plan':   (BuildContext context) => new OrdersSewingPlanPage(),
         '/orders-carpenter-plan':   (BuildContext context) => new OrdersCarpenterPlanPage(),
         '/orders-upholstery-plan':   (BuildContext context) => new OrdersUpholsteryPlanPage(),
+        '/comments':   (BuildContext context) => new HomePagePost(),
 
         '/table':         (BuildContext context) => new MyApp(),
         '/visits':         (BuildContext context) => new VisitsPage(),

@@ -66,7 +66,7 @@ class Api {
     );
     List<dynamic> res = [];
     if (response.statusCode == 200) {
-      print(json.decode(response.body)['items']);
+      //print(json.decode(response.body)['items']);
       res = json.decode(response.body)['items'];
        return res;
     } else {
@@ -123,7 +123,7 @@ class Api {
 
   static Future<List<dynamic>> fetchOrdersAll(dynamic filterItems, {String sort = 'AE'}) async {
     String filter = '&filter='+jsonEncode(filterItems);
-    String path = 'accounting/orders?_dc=1563489532611&page=1&start=0&per-page=500&sort=[{"property":"'+sort+'","direction":"ASC"},{"property":"index","direction":"ASC"}]';
+    String path = 'accounting/orders?_dc=1563489532611&page=1&start=0&per-page=500&expand=orderWork,comment&sort=[{"property":"'+sort+'","direction":"ASC"},{"property":"index","direction":"ASC"}]';
 
     String token;
     await getToken().then((value) {
@@ -142,6 +142,60 @@ class Api {
       // If server returns an OK response, parse the JSON.
 
       return json.decode(response.body)['items'];
+    } else {
+      // If that response was not OK, throw an error.
+      throw Exception('Failed to load post');
+    }
+  }
+
+  static Future<List<dynamic>> fetchEmployees(dynamic filterItems, {String sort = 'name'}) async {
+    String filter = '&filter='+jsonEncode(filterItems);
+    String path = 'accounting/employees?per-page=-1&sort=[{"property":"department_id","direction":"ASC"},{"property":"'+sort+'","direction":"ASC"}]';
+
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    var url =_url+path+'&auth_token='+token+filter;
+    print('Api: fetchEmployees========================');
+    print(url);
+    print(filter);
+
+    final response = await http.get(
+        url,
+        headers: { "Content-Type" : "application/json"}
+    );
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON.
+
+      return json.decode(response.body)['data'];
+    } else {
+      // If that response was not OK, throw an error.
+      throw Exception('Failed to load post');
+    }
+  }
+
+  static Future<List<dynamic>> fetch(String urlRest, dynamic filterItems, String sort) async {
+    String filter = '&filter='+jsonEncode(filterItems);
+    String path = urlRest+'?per-page=-1&sort=[{"property":"'+sort+'","direction":"ASC"}]';
+
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    var url =_url+path+'&auth_token='+token+filter;
+    print('Api: fetch'+urlRest+'========================');
+    print(url);
+    print(filter);
+
+    final response = await http.get(
+        url,
+        headers: { "Content-Type" : "application/json"}
+    );
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON.
+
+      return json.decode(response.body)['data'];
     } else {
       // If that response was not OK, throw an error.
       throw Exception('Failed to load post');
@@ -174,9 +228,10 @@ class Api {
     }
   }
 
+
   static Future<dynamic> updateOrderStatus(dynamic recordId, Map<String,String> group) async {
 
-     //updateOrderStatusBitrix(recordId, group);
+    //updateOrderStatusBitrix(recordId, group);
     String path = 'accounting/orders/';
     String token;
     await getToken().then((value) {
@@ -193,10 +248,87 @@ class Api {
       body: jsonEncode(group),
     );
     if (response.statusCode == 200) {
-      print(json.decode(response.body));
+      //print(json.decode(response.body));
       return true;
     } else {
-      print(json.decode(response.body));
+      //print(json.decode(response.body));
+      return false;
+
+      throw Exception('Failed to load post');
+    }
+  }
+
+  static Future<dynamic> updateFields(String path, dynamic recordId, Map<String,String> group) async {
+
+    //updateOrderStatusBitrix(recordId, group);
+    //String path = 'accounting/orders';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+
+    var url =_url + path+'/'+ recordId.toString()+'?auth_token='+token;
+    print(jsonEncode(group));
+    print(url);
+
+    final response = await http.put(
+      url,
+      headers: { "Content-Type" : "application/json", "Accept" : "application/json"},
+      body: jsonEncode(group),
+    );
+    if (response.statusCode == 200) {
+      //print(json.decode(response.body));
+      return true;
+    } else {
+      //print(json.decode(response.body));
+      return false;
+
+      throw Exception('Failed to load post');
+    }
+  }
+
+  static Future<dynamic> fetchRecord(String method, String path,  Map<String,String> group, String expand) async {
+
+    //updateOrderStatusBitrix(recordId, group);
+    //String path = 'accounting/orders';
+    String token;
+    await getToken().then((value) {
+      token = value;
+    });
+    String expandUrl = '';
+    if (expand != '') {
+      expandUrl = '&expand='+expand;
+    }
+    var url =_url + path+''+ '?auth_token='+token+expandUrl;
+    print(jsonEncode(group));
+    print(url);;
+    var response;
+
+    if (method == 'post') {
+      response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: jsonEncode(group),
+      );
+    }
+    if (method == 'put') {
+      response = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: jsonEncode(group),
+      );
+    }
+    if (response.statusCode == 200) {
+      //print(json.decode(response.body));
+      return json.decode(response.body);
+    } else {
+      //print(json.decode(response.body));
       return false;
 
       throw Exception('Failed to load post');
@@ -301,10 +433,10 @@ class Api {
       body: jsonEncode(group),
     );
     if (response.statusCode == 200) {
-      print(json.decode(response.body));
+      //print(json.decode(response.body));
       return true;
     } else {
-      print(json.decode(response.body));
+      //print(json.decode(response.body));
       return false;
 
       throw Exception('Failed to load post');

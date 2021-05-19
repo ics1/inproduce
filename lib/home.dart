@@ -35,6 +35,11 @@ class HomePage extends StatefulWidget {
 
 
   Future<List<dynamic>> post;// = Future(null);//Api.fetchPost(null);
+  List<String> employees = [];
+  List<String> statuses = [];
+
+  List<dynamic> departments;
+
   Map <String, dynamic> filter = {};
   Decimal coefSumTotal = Decimal.parse('0.0');
   Decimal coefPlSumTotal = Decimal.parse('0.0');
@@ -58,6 +63,10 @@ class _HomePageState extends State<HomePage> {
   String columnStatus = 'W';//BA
   String columnFio = 'Z';
 
+  List <String> employee = [];//['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга',
+    //'Завальнюк', 'Скрипник','Ткачук', 'Чеховский','Долгиер','Гаврилашенко','Резерв'];
+  //List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
+
   @override
   _HomePageState() {
     print('init home _HomePageState');
@@ -72,18 +81,56 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     print('initstate home=');
+
+
     setStartFilter();
+
 
   }
   setStartFilter() {
     setState(() {
       widget._date = [new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][0])), new DateTime.now().add(Duration(days: widget.range[widget.weekday-1][1]))];
     });
-    getUserType().then((value) => setType(value));
+
+    getEmployees('1').then((value){
+
+      if (value == null) {
+        setEmployees('1').then((valueSet) {
+          widget.employees = valueSet;
+          setStatuses().then((valueSetSt) {
+            widget.statuses = valueSetSt;
+            getUserType().then((value) => setType(value));
+          });
+
+        });
+
+      } else {
+        widget.employees = value;
+        getStatuses().then((valueSetSt) {
+          widget.statuses = valueSetSt;
+        });
+        getUserType().then((value) => setType(value));
+      }
+    });
+
+
+
+    //getUserType().then((value) => setType(value));
   }
+
+//  setEmployeeList() {
+//    //employee = getEmployees();
+//    //employee = erg;
+//    employee.add('Все');
+//    getEmployees().then((erg) {
+//      //employee = erg;
+//    });
+//  }
 
   setType(value) {
     userType = value;
+
+
     if (userType == null) {
       Navigator.of(_ctx).pushReplacementNamed("/login");
     }
@@ -136,17 +183,18 @@ class _HomePageState extends State<HomePage> {
 
 
   //List<String> employee= ['все', 'социгашев', 'байталенко', 'литвин', 'андреев', 'буковский', 'пикущак'];
-  List <String> employee= ['Все','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко', 'Ракицкий','Коцюк','Салыга',
-    'Завальнюк', 'Скрипник','Ткачук', 'Чеховский','Долгиер','Гаврилашенко','Резерв'];
-  List <String> employeeSt= ['Все','Василенко', 'Эклема', 'Лещинский', 'Царалунга', 'Бойко', 'Отрышко', 'Жарков', 'Ракицкий'];
+
+
+
 
   _buildDropDown(int userType, List<String> list, stateName) {
+
     if (userType == 10 || userType == 0) {
       return DropdownButton<String>(
         value: (widget.dropdownValue[stateName] != null) ? widget.dropdownValue[stateName] :  '0',
         onChanged: (String newValue) {
           setState(() {
-            if(list[int.parse(newValue)] == 'Все') {
+            if(list[int.parse(newValue)] == '') {
               widget.filter.remove(columnFio);
             } else {
               widget.filter[columnFio] = list[int.parse(newValue)];
@@ -166,6 +214,54 @@ class _HomePageState extends State<HomePage> {
     } else { // Just Divider with zero Height xD
       return Divider(color: Colors.white, height: 0.0);
     }
+  }
+
+  _buildDropDownFuture(int userType, Future<List<dynamic>> lists, stateName, departmentId ) {
+    if (userType == 10 || userType == 0) {
+      return FutureBuilder<List<dynamic>>(
+        future: lists,
+        builder: (context, snapshot) {
+
+          if (snapshot.hasData) {
+            List<String> list = [];
+            list.add('Все');
+            snapshot.data.forEach((row) {
+              if (departmentId == row['department_id']) {
+                list.add(row['name']);
+              }
+            });
+            employee = list;
+            return DropdownButton<String>(
+              value: (widget.dropdownValue[stateName] != null) ? widget.dropdownValue[stateName] :  '0',
+              onChanged: (String newValue) {
+                setState(() {
+                  if(list[int.parse(newValue)] == 'Все') {
+                    widget.filter.remove(columnFio);
+                  } else {
+                    widget.filter[columnFio] = list[int.parse(newValue)];
+                  }
+                  widget.post = Api.fetchOrdersAll(widget.filter);
+                  widget.dropdownValue[stateName] = newValue;
+                });
+              },
+              items: list.map<DropdownMenuItem<String>>((String value) {
+                var i = list.indexOf(value);
+                return DropdownMenuItem<String>(
+                  value: i.toString(),
+                  child: Text(value),
+                );
+              }).toList(),
+            );;
+
+          }
+          // By default, show a loading spinner.
+          return Center();//Center( child:CircularProgressIndicator());
+        },
+      );
+    } else { // Just Divider with zero Height xD
+      return Divider(color: Colors.white, height: 0.0);
+    }
+
   }
 
   DateTime picked = new DateTime.now();
@@ -198,6 +294,7 @@ class _HomePageState extends State<HomePage> {
       ),
     ) ?? false;
   }
+
   static Future<void> pops()  async {
      await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
 
@@ -342,7 +439,7 @@ class _HomePageState extends State<HomePage> {
                           //padding: new EdgeInsets.only(left: 0.0, bottom: 0, top: 10.0),
                             margin: new EdgeInsets.only(left: 15.0, bottom: 0, top: 10.0, right: 15.0),
 
-                            child: _buildDropDown(userType, employee, 'employeeState')
+                            child: _buildDropDown(userType, widget.employees, 'employeeState')
                         ),
                       ),
 
@@ -495,7 +592,12 @@ class _HomePageState extends State<HomePage> {
               Navigator.of(_ctx).pushReplacementNamed("/visits");
             }
         ),
-
+        ListTile(
+            title: Text('Комментарии'),
+            onTap: () {
+              Navigator.of(_ctx).pushReplacementNamed("/comments");
+            }
+        ),
 
       ]);
     } else {
@@ -639,7 +741,7 @@ class _HomePageState extends State<HomePage> {
 
       Decimal ZatratiDen = Decimal.parse('400000') /
           Decimal.parse(daysWork.toString());
-      print(listExpand.length.toString());
+
       Decimal ZatratiPeriod = ZatratiDen *
           Decimal.parse(listExpand.length.toString());
       Decimal DividentiDen = Decimal.parse('150000') /
@@ -666,6 +768,8 @@ Future<void> logout() async{
   pref.remove("fio");
   pref.remove("type");
   pref.remove("filter");
+  pref.remove("employees_1");
+  pref.remove("statuses");
 }
 
 
@@ -693,6 +797,70 @@ getFilterPref() async {
 Future<void> setFilterPref(dynamic filter) async{
   SharedPreferences pref = await SharedPreferences.getInstance();
   pref.setString("filter", filter.toString());
+  //pref.remove('employees');
+}
+
+Future<List<String>> setEmployees(departmentId) async{
+  List<dynamic> futureEmployees;
+  SharedPreferences pref = await SharedPreferences.getInstance();
+
+  List<String> employees = pref.getStringList("employees_"+departmentId);
+  Map<String,List<String>> employeesMap = {};
+
+  if (employees == null) {
+
+    futureEmployees = await Api.fetch('accounting/employees', {'status':'1'}, 'name');
+    List<String> words;
+    futureEmployees.forEach((row) {
+      if (!employeesMap.containsKey(row['department_id'].toString())) {
+        employeesMap[row['department_id'].toString()] = [];
+        employeesMap[row['department_id'].toString()].add('');
+      }
+      words = row['name'].split(' ');
+      employeesMap[row['department_id'].toString()].add(words[0]);
+      //employees.add(row['name']);
+    });
+
+    employeesMap.forEach((key, row ) {
+      pref.setStringList("employees_"+key, row);
+    });
+
+  }
+  return employeesMap[departmentId];
+}
+
+getEmployees(departmentId) async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  //preferences.remove("employees_"+departmentId);
+  List<String> employees = preferences.getStringList("employees_"+departmentId);
+  return employees;
+}
+
+Future<List<String>> setStatuses() async{
+  List<dynamic> futureStatuses;
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  List<String> statuses = pref.getStringList("statuses");
+  if (statuses == null) {
+    statuses = [];
+    futureStatuses = await Api.fetch('accounting/order-work-statuses', [], 'id');
+
+    statuses.add('');
+    futureStatuses.forEach((row) {
+      statuses.add('');
+    });
+    futureStatuses.forEach((row) {
+      statuses[row['id']] = row['name'];
+    });
+    pref.setStringList("statuses", statuses);
+  }
+  return statuses;
+}
+
+getStatuses() async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  //preferences.remove("statuses");
+  List<String> statuses = preferences.getStringList("statuses");
+  return statuses;
 }
 
 daysInMonth(int monthNum, int year)

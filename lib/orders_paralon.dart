@@ -37,13 +37,13 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
   List<String> listDropDown = <String>['По номеру', 'По клиенту', 'По моделе', 'По дате производства'];
 
   //List <String> employeeShv= ['','Ракицкий','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Иксаров', 'Кузьменко', 'Коцюк', 'Салыга', 'Резерв'];
-  List <String> employeeShv= ['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор', 'Резерв'];
-  List <String> status = ['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
-  List <String> statusKr = ['','Выполнен', 'Наряд выдан'];
+  List <String> employeeShv= [];//['','Социгашев', 'Байталенко', 'Литвин', 'Андреев', 'Буковский', 'Пикущак', 'Кузьменко','Коцюк','Салыга','Завальнюк', 'Скрипник','Ткачук', 'Крейтор', 'Резерв'];
+  List <String> status = [];//['','Наряд срочный', 'Наряд выдан', 'Взят в работу', 'Остановлен', 'Выполнен'];
+  List <String> statusKr = [];//['','Выполнен', 'Наряд выдан'];
   List <String> statusNastil = ['','Да'];
 
 
-  List <String> statusKeys = ['','5', '4', '2', '3', '1'];
+  List <String> statusKeys = [];//['','5', '4', '2', '3', '1'];
 
   FocusNode myFocusNode;
   TextEditingController editingController = TextEditingController();
@@ -72,7 +72,30 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
     _dateRangeText = dateFormat.format(_date[0])+'-'+dateFormat.format(_date[1]);
     _textFieldRangeController.text = _dateRangeText;
     //filter["BP"] = '4';
-    getUserType().then((value) => setType(value));
+    getEmployees('2').then((value){
+
+      getStatuses().then((valueStatus) {
+        List<String> statusKeysNew = [''];
+        status = valueStatus;
+        int i = 1;
+        valueStatus.forEach((row) {
+          if (i != (status.length)) {
+            statusKeysNew.add(i.toString());
+          }
+          i++;
+        });
+        //setState(() {
+          status = valueStatus;
+          statusKr = valueStatus;
+          statusKeys = statusKeysNew;
+          employeeShv = value;
+        //});
+        getUserType().then((value) => setType(value));
+      });
+
+
+    });
+
 
     myFocusNode = FocusNode();
     setState(() {
@@ -1099,6 +1122,17 @@ class _OrdersParalonPageState extends State<OrdersParalonPage> {
     pref.remove("fio");
     pref.remove("type");
     pref.remove("filter");
+  }
+  getEmployees(departmentId) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String> employees = preferences.getStringList("employees_"+departmentId);
+    return employees;
+  }
+
+  getStatuses() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String> statuses = preferences.getStringList("statuses");
+    return statuses;
   }
 }
 

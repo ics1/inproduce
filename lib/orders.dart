@@ -109,7 +109,7 @@ class _OrdersPageState extends State<OrdersPage> {
             if (snapshot.data[i]['V'] == '') {
               snapshot.data[i]['V'] = '0';
             }
-            sum = sum + Decimal.parse(snapshot.data[i]['V'].replaceAll(',','.'));
+            sum = sum + Decimal.parse(snapshot.data[i]['V'].toString().replaceAll(',','.'));
           }
           sum = sum/Decimal.parse('7860');
           return Row(
@@ -184,7 +184,7 @@ class _OrdersPageState extends State<OrdersPage> {
     final NumberFormat formatter = NumberFormat.simpleCurrency(
         locale: Localizations.localeOf(context).toString());
     iconStatus = _getGridCardIconStatus(product['W']);
-    print(product);
+    //print(product);
     int colors = 0;
     if (product['BA'] =='1' && product['BP'] =='1') {
       colors = 50;
